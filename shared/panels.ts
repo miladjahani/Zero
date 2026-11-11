@@ -1,0 +1,697 @@
+/**
+ * Deployable panel catalog — the single source of truth for the panel the app
+ * installs on Railway, Render.com and a Docker VPS.
+ *
+ * Both the Worker (worker/railway.ts, worker/render.ts, worker/panel-deploy.ts,
+ * worker/telegram-ui.ts) and the frontend (DeployWizard, vps-deploy.ts) import
+ * this module, so the list below is exactly what every part of the app offers —
+ * the Telegram deployer, the web wizard and the generated ZIP packages can never
+ * disagree about what "the panel" is.
+ *
+ * The catalog now holds **one** entry: our own panel (NEXUS / Mizetusi). Third-
+ * party panels were removed on the owner's request — see REMOVED_PANELS for what
+ * was dropped and why, so the decision stays auditable. The Cloudflare *worker*
+ * sources are a separate catalog (shared/worker-sources.ts) and are unaffected.
+ *
+ * Only public, non-secret metadata lives here. Credentials (admin password,
+ * secret key) are always generated at deploy time and never stored in this file.
+ *
+ * LIVENESS RULE: every entry carries `lastCommit` + `verifiedAt` — the date of
+ * the newest upstream commit and the date we checked it against the live repo.
+ */
+
+export type PanelRuntime = 'docker' | 'python'
+export type DeployTarget = 'railway' | 'render' | 'vps'
+/** Community a project comes from — shown as a flag in the pickers. */
+export type PanelOrigin = 'ir' | 'cn' | 'ru' | 'intl'
+
+/** Environment-variable names a panel understands on the host. */
+export interface PanelEnvNames {
+  /** Dashboard admin password. */
+  adminPassword?: string
+  /** Session/signing secret. */
+  secretKey?: string
+  /** HTTP port to bind. */
+  port?: string
+  /** Persistent data directory. */
+  dataDir?: string
+  /** Public domain variable (set by the platform when available). */
+  publicDomain?: string
+  /** PostgreSQL connection string (panels that need a database). */
+  dbUrl?: string
+  /** Redis connection string. */
+  redisUrl?: string
+  /** Redis host name. */
+  redisHost?: string
+  /** Host adapter name used by the panel (for example NEXUS_PLATFORM). */
+  platform?: string
+  /** Runtime engine master switch (for example XRAY_ENABLED). */
+  engineEnabled?: string
+  /** Optional WARP master switch (for example WARP_ENABLED). */
+  warpEnabled?: string
+  /** Railway project token consumed by the panel's TCP-proxy manager. */
+  railwayToken?: string
+  /**
+   * Railway **project id**.
+   *
+   * Railway injects the environment and the service id into every deployment
+   * but *not* the project id, and the panel's own TCP-proxy pass refuses to run
+   * without one (`railway.configured()` wants the token, project, environment
+   * and service together). A deployment that omits this therefore can never
+   * publish a raw-TCP port, however many capabilities the admin switches on —
+   * which on Railway means no Reality, no AnyTLS, no MTProto and no web proxy,
+   * because only a TCP proxy can forward them.
+   */
+  railwayProjectId?: string
+  /** Explicit HTTP port used when Railway's injected PORT names a raw transport. */
+  httpPort?: string
+  /** Direct endpoint host/port for VPS-style deployments. */
+  directHost?: string
+  directPort?: string
+}
+
+/** One raw-TCP capability and the port its listener binds inside the container. */
+export interface PanelTcpPort {
+  port: number
+  label: string
+  /**
+   * The deployer publishes this port itself, when it creates the deployment.
+   *
+   * Only a listener that binds with no switch to flip may be flagged. On the
+   * shipped panel that is exactly one: the direct (Reality) transport, which is
+   * why a fresh Railway deployment has a working direct endpoint before anybody
+   * opens the panel. Every other raw port belongs to an admin switch, and the
+   * panel now creates its own Railway TCP proxy the moment that switch goes on
+   * (upstream `app/railway.py` + `app/autoconfig.py`). Opening a public port in
+   * front of a listener nobody binds is the exact failure both sides refuse.
+   */
+  always?: boolean
+}
+
+/**
+ * A switch the deployer flips on the panel itself after the first live poll.
+ * `key` is the dotted path inside the panel's save payload
+ * (`{ mtproto: { enabled: '1' } }`, `{ webproxy: { 'web-http': … } }`).
+ *
+ * The shipped panel deliberately declares **none**: its upstream pass states the
+ * rule ("a fresh deployment switches nothing on by itself") because switching a
+ * raw-port listener on with no admin in the loop publishes a port nobody asked
+ * for — and the Telegram WEB proxy in particular puts a recognisable signature
+ * on the deployment's own domain, which is how a panel ends up reachable only
+ * through a VPN. Keep the mechanism for a future panel; do not use it to
+ * pre-answer a decision the panel's own card asks the admin to make.
+ */
+export interface PanelCapability {
+  key: string
+  label: string
+}
+
+export interface PanelSpec {
+  /** Stable id passed through the API (`worker_source` / `panel`). */
+  id: string
+  /** Display name. */
+  name: string
+  /** One-line description shown in the pickers. */
+  tagline: string
+  /** GitHub repository in `owner/name` form. */
+  repo: string
+  /** Full repository URL. */
+  url: string
+  /**
+   * Branch the deployers build from *and* the branch the version check reads.
+   * Keeping it in the catalog means "the latest version" is one definition for
+   * the Railway deploy, the Render blueprint and the upstream-version probe.
+   */
+  defaultBranch?: string
+  /** docker = container image; python = plain Python app. */
+  runtime: PanelRuntime
+  /** Port the panel listens on. */
+  port: number
+  /** Extra container ports (e.g. a separate subscription port). */
+  extraPorts?: number[]
+  /**
+   * The raw-TCP capabilities that need a published port of their own, with the
+   * label the dashboard shows. Railway gives each one a random public port
+   * (TCP proxy), a VPS publishes the same numbers directly — so this list is
+   * what every deploy path iterates, never a single "first extra port".
+   */
+  tcpPorts?: PanelTcpPort[]
+  /**
+   * Panel-side switches this deployer turns on itself once the panel answers
+   * (see `key`: the path inside the panel's own save API). They are the
+   * listeners behind {@link PanelSpec.tcpPorts} — without them a published port
+   * forwards to a socket nothing ever binds.
+   */
+  capabilities?: PanelCapability[]
+  /** UDP container ports (e.g. WireGuard 51820/udp). */
+  udpPorts?: number[]
+  /** Whether the project ships a Dockerfile we can build from source. */
+  hasDockerfile?: boolean
+  /** Published container image — preferred over building from source. */
+  dockerImage?: string
+  /** Panel needs a PostgreSQL sidecar (the generated compose adds one). */
+  requiresDb?: 'postgres'
+  /** Panel needs a Redis sidecar. */
+  requiresRedis?: boolean
+  /** Container path that must persist between restarts. */
+  dataVolume?: string
+  /**
+   * State file the panel expects *inside* that path (SQLite database). Panels
+   * read this from an env var, and handing them the directory itself makes
+   * sqlite3 fail with "unable to open database file" — so the file is declared
+   * here rather than re-derived at every deploy path.
+   */
+  dataFile?: string
+  /** Linux capabilities the container needs (e.g. NET_ADMIN for Fail2ban). */
+  capAdd?: string[]
+  /** Extra read-only host mounts (e.g. /lib/modules for WireGuard). */
+  extraVolumes?: string[]
+  /** Kernel settings the container requires. */
+  sysctls?: string[]
+  /** Some panels (s-ui) refuse to run without a TTY. */
+  tty?: boolean
+  /** Path to the Dockerfile inside the repo (docker runtime only). */
+  dockerfilePath?: string
+  /** Build command for non-Docker runtimes. */
+  buildCommand?: string
+  /** Start command for non-Docker runtimes. */
+  startCommand?: string
+  /** Dashboard/login path used for links and health checks. */
+  panelPath: string
+  /** Health-check path (defaults to panelPath). */
+  healthPath?: string
+  /** Env-var names to set on the host. */
+  env: PanelEnvNames
+  /** Optional post-deploy admin bootstrap endpoint on the panel itself. */
+  setupPath?: string
+  /** Targets this panel supports. */
+  targets: DeployTarget[]
+  /** Installs xray-core inside generated VPS images (proxy panels only). */
+  needsXray?: boolean
+  /** Documented default admin password, shown as a hint to the user. */
+  defaultAdminPassword?: string
+  /** Community this project comes from. */
+  origin?: PanelOrigin
+  /** Requirements / caveats shown in the picker and generated README. */
+  notes?: string
+  /** ISO date of the newest upstream commit we verified. */
+  lastCommit?: string
+  /** ISO date this entry was verified against the live repository. */
+  verifiedAt?: string
+}
+
+/** Flag + label for each community. */
+export const PANEL_ORIGIN: Record<PanelOrigin, { flag: string; label: string }> = {
+  ir: { flag: '🇮🇷', label: 'ایران' },
+  cn: { flag: '🇨🇳', label: 'چین' },
+  ru: { flag: '🇷🇺', label: 'روسیه' },
+  intl: { flag: '🌍', label: 'بین‌المللی' },
+}
+
+export const PANELS: PanelSpec[] = [
+  {
+    id: 'mizetusi',
+    name: 'پنل اختصاصی ما',
+    tagline:
+      'NEXUS (Mizetusi) — کنترل‌سنتر FastAPI + Xray با ماتریس کامل ترانسپورت (VLESS/VMess/Trojan/Shadowsocks/Reality) و پل ورکر کلودفلر',
+    repo: 'miladjahani/Mizetusi',
+    url: 'https://github.com/miladjahani/Mizetusi',
+    defaultBranch: 'main',
+    runtime: 'docker',
+    port: 8080,
+    // Every raw-TCP listener the panel can run, in the order a client should try
+    // them — read from the panel's own catalog (`app/ports.py` upstream), so the
+    // two can never disagree about which port a capability binds. On a VPS these
+    // numbers are the public ports; on Railway each one needs a TCP proxy whose
+    // public port Railway allocates at random, and Render publishes HTTPS only —
+    // so the list is the single source of truth every path iterates.
+    //
+    // TUIC (8445) is deliberately absent: it is QUIC over UDP and a TCP proxy
+    // cannot carry it (the panel withholds it on Railway for the same reason).
+    extraPorts: [8443, 8444, 8446, 8448, 8449],
+    tcpPorts: [
+      // The one listener with no switch: it binds in every fresh panel, so the
+      // deployer publishes it and a direct endpoint exists immediately.
+      { port: 8443, label: 'Reality (مسیر مستقیم)', always: true },
+      { port: 8444, label: 'AnyTLS' },
+      { port: 8446, label: 'MTProto' },
+      { port: 8448, label: 'وب‌پروکسی HTTP' },
+      { port: 8449, label: 'وب‌پروکسی SOCKS5' },
+    ],
+    // No `capabilities` on purpose — see the note on `PanelCapability`. The panel
+    // switches nothing on by itself, is explicit about it upstream, and creates
+    // the TCP proxy for a raw port only once its admin has enabled that port.
+    hasDockerfile: true,
+    dockerfilePath: 'Dockerfile',
+    panelPath: '/login',
+    healthPath: '/health',
+    env: {
+      adminPassword: 'ADMIN_PASSWORD',
+      secretKey: 'JWT_SECRET',
+      port: 'PORT',
+      dataDir: 'SQLITE_PATH',
+      publicDomain: 'PUBLIC_BASE_URL',
+      platform: 'NEXUS_PLATFORM',
+      engineEnabled: 'XRAY_ENABLED',
+      warpEnabled: 'WARP_ENABLED',
+      railwayToken: 'NEXUS_RAILWAY_TOKEN',
+      railwayProjectId: 'NEXUS_RAILWAY_PROJECT_ID',
+      httpPort: 'NEXUS_HTTP_PORT',
+      directHost: 'NEXUS_DIRECT_HOST',
+      directPort: 'NEXUS_DIRECT_PORT',
+    },
+    targets: ['railway', 'render', 'vps'],
+    // The image builds xray-core from the official xtls image itself, so nothing
+    // has to be installed on the host.
+    needsXray: false,
+    // No `defaultAdminPassword` on purpose: the deployer then generates a strong
+    // password per deployment and shows it once, instead of shipping the panel's
+    // own `admin/admin` default. The upstream default is documented in `notes`.
+    origin: 'ir',
+    dataVolume: '/data',
+    // Exactly what the panel's own docker-compose.yml / render.yaml set, and
+    // what app/db.py falls back to when the variable is absent.
+    dataFile: '/data/nexus.db',
+    capAdd: ['NET_ADMIN'],
+    notes:
+      'رمز ادمین هنگام استقرار ساخته و یک‌بار نمایش داده می‌شود (پیش‌فرض خودِ پنل admin/admin است — همان اول عوضش کنید). دیتابیس SQLite در /data است، پس روی Railway/Render یک Volume روی /data بگذارید وگرنه با هر ری‌دیپلوی پاک می‌شود. لیسنرهای خام پنل: Reality روی ۸۴۴۳ (تنها پورتی که سوییچ ندارد؛ همین یکی را ما موقع ساخت سرویس منتشر می‌کنیم)، AnyTLS روی ۸۴۴۴، MTProto روی ۸۴۴۶، وب‌پروکسی HTTP روی ۸۴۴۸ و SOCKS5 روی ۸۴۴۹. TUIC روی ۸۴۴۵ پروتکل UDP است و TCP Proxy آن را حمل نمی‌کند، پس روی Railway منتشر نمی‌شود. روی VPS همین شماره‌ها عمومی‌اند. روی Railway پنل خودش برای هر پورتی که مدیر روشن کرده یک TCP Proxy می‌سازد و پورت عمومی تصادفی‌اش را در کارت خودش نشان می‌دهد؛ به همین دلیل توکن Project و شناسهٔ پروژه (NEXUS_RAILWAY_PROJECT_ID) در متغیرهای سرویس گذاشته می‌شوند — بدون شناسهٔ پروژه این بخش کار نمی‌کند. ما هیچ سوییچی را خودمان روشن نمی‌کنیم (سیاست خودِ مخزن). روی Render فقط پورت HTTPS منتشر می‌شود، پس این سه پورت آنجا در دسترس نیستند. CAP NET_ADMIN فقط برای خروج اختیاری WARP در compose تنظیم شده است.',
+    lastCommit: '2026-09-29',
+    verifiedAt: '2026-09-29',
+  },
+]
+
+export const DEFAULT_PANEL_ID = PANELS[0].id
+
+// ── Admin-editable source of the dedicated panel ──────────────────────────────
+//
+// The panel ships with a repository baked into the catalog, but its address can
+// change at any time (a renamed owner, a new fork, a different upstream). So the
+// address is overridable at runtime and persisted in D1 instead of being frozen
+// in code. Everything that matters resolves through PANELS — the Railway
+// deployer, the Render blueprint, the VPS package, the upstream version probe,
+// the Telegram bot and the web UI — so one save moves the whole installation.
+
+/** Address shipped with the code — the fallback and what "reset" restores. */
+export const DEFAULT_PANEL_REPO = PANELS[0].repo
+
+/** GitHub `owner/name`, deliberately free of `/`, `?`, `#` and whitespace. */
+const PANEL_REPO_RE = /^[A-Za-z0-9][A-Za-z0-9.-]{0,99}\/[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/
+
+/**
+ * Accept `owner/name`, a GitHub URL or a `.git` URL and return the canonical
+ * `owner/name`. Returns `null` when the input is not a repository address —
+ * this value is interpolated into GitHub and platform API URLs, so anything
+ * that is not a plain `owner/name` must be rejected rather than escaped.
+ */
+export function normalizePanelRepo(input: string): string | null {
+  const value = (input ?? '')
+    .trim()
+    .replace(/^https?:\/\/(?:www\.)?github\.com\//i, '')
+    .replace(/\.git\/?$/i, '')
+    .replace(/\/+$/, '')
+  return PANEL_REPO_RE.test(value) ? value : null
+}
+
+/** Point the dedicated panel at a different source repository. */
+export function applyPanelRepo(repo: string | null | undefined): void {
+  const value = normalizePanelRepo(repo ?? '')
+  if (!value) return
+  PANELS[0].repo = value
+  PANELS[0].url = `https://github.com/${value}`
+}
+
+/** Drop any override and go back to the address shipped with the code. */
+export function resetPanelRepo(): void {
+  PANELS[0].repo = DEFAULT_PANEL_REPO
+  PANELS[0].url = `https://github.com/${DEFAULT_PANEL_REPO}`
+}
+
+/**
+ * Panels that were in this catalog and were **removed on the owner's request**:
+ * the app now ships a single, first-party panel. They are recorded here (instead
+ * of being silently deleted) so the removal is auditable and reversible, and so
+ * nobody later re-adds one believing it was never considered.
+ *
+ * The Cloudflare worker sources (shared/worker-sources.ts) are unaffected.
+ */
+export const REMOVED_PANELS: Array<{ id: string; name: string; repo: string; reason: string }> = [
+  { id: 'stanngv2', name: 'StanNG v2', repo: 'youdidking/stanngv2', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: 'pxpanel', name: 'PXPANEL', repo: 'iran-px-panel/pxpanel', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: '3xui', name: '3X-UI', repo: 'MHSanaei/3x-ui', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: 'sui', name: 'S-UI', repo: 'alireza0/s-ui', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: 'pasarguard', name: 'PasarGuard', repo: 'PasarGuard/panel', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: 'luffy', name: 'Luffy Panel', repo: 'luffy-sh-op/LUFFY_PANEL', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: 'wgeasy', name: 'WG-Easy', repo: 'wg-easy/wg-easy', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+  { id: 'remnawave', name: 'Remnawave', repo: 'remnawave/backend', reason: 'پنل شخص ثالث — به درخواست مالک حذف شد' },
+]
+
+/**
+ * Repositories we checked and deliberately did NOT add — kept here so the
+ * decision is auditable instead of silently forgotten.
+ *
+ * - Gozargah/Marzban      → آخرین کامیت ۲۰۲۵-۰۱-۰۹ (غیرفعال) — جانشینش PasarGuard است
+ * - 3Kmfi6HP/EDtunnel     → مخزن اصلی دیگر در دسترس نیست (۴۰۴)
+ * - zizifn/edgetunnel     → آخرین کامیت ۲۰۲۴-۱۱-۲۷ (راکد)
+ * - Misaka-blog/cf-wkrs-pages-vless → آخرین کامیت ۲۰۲۴-۰۴-۲۳ (راکد)
+ * - yonggekkk/argosbx     → فایل ورکر در مخزن فقط یک استاب است (از طریق اسکریپت خودش منتشر می‌شود)
+ */
+export const EXCLUDED_REPOS: Array<{ repo: string; reason: string }> = [
+  // Brand names users asked about that have no verifiable public repository —
+  // they are sold/distributed through Telegram channels and resellers, so we
+  // cannot check liveness or wire them into the automated deployer.
+  { repo: 'SLV panel', reason: 'مخزن عمومی قابل‌تأییدی ندارد (از طریق تلگرام/نمایندگی توزیع می‌شود)' },
+  { repo: 'RVG panel', reason: 'مخزن عمومی ندارد؛ فقط به‌عنوان سبک کانفیگ (RVG style) در چند پروژه ارجاع داده شده' },
+  { repo: 'loofi panel', reason: 'در گیت‌هاب فقط پروژه‌های هم‌نام و بی‌ربط پیدا شد (no verifiable repo)' },
+  { repo: 'sanayii panel', reason: 'مخزن عمومی ندارد؛ در گفتگوی 3x-ui به‌عنوان پنل تجاری فارسی نام برده شده' },
+  { repo: 'solgx', reason: 'هیچ مخزن مرتبطی در گیت‌هاب پیدا نشد (0 نتیجه)' },
+  { repo: 'freedomnet25500/new-worker-panel', reason: 'آخرین کامیت ۲۰۲۴-۰۶-۰۱ — راکد' },
+  { repo: 'x4gKing/Vless-Panel', reason: 'مخزن در دسترس نیست (404)' },
+  { repo: 'Gozargah/Marzban', reason: 'آخرین کامیت ۲۰۲۵-۰۱-۰۹ — غیرفعال (جانشین: PasarGuard)' },
+  { repo: '3Kmfi6HP/EDtunnel', reason: 'مخزن در دسترس نیست (404)' },
+  { repo: 'zizifn/edgetunnel', reason: 'آخرین کامیت ۲۰۲۴-۱۱-۲۷ — راکد' },
+  { repo: 'Misaka-blog/cf-wkrs-pages-vless', reason: 'آخرین کامیت ۲۰۲۴-۰۴-۲۳ — راکد' },
+  { repo: 'yonggekkk/argosbx', reason: 'فایل ورکر در مخزن استاب است' },
+]
+
+/** Resolve a panel id (unknown/empty → the default panel). */
+export function resolvePanel(id?: string | null): PanelSpec {
+  return PANELS.find((p) => p.id === id) ?? PANELS[0]
+}
+
+/** Panels that can be deployed to a given target. */
+export function panelsForTarget(target: DeployTarget): PanelSpec[] {
+  return PANELS.filter((p) => p.targets.includes(target))
+}
+
+/** Flag + community label for a panel. */
+export function panelOriginLabel(panel: PanelSpec): string {
+  const origin = panel.origin ? PANEL_ORIGIN[panel.origin] : undefined
+  return origin ? `${origin.flag} ${origin.label}` : ''
+}
+
+/** Full clone URL used inside generated Dockerfiles / deploy scripts. */
+/** Container directory a panel's state lives in (never the file itself). */
+export function panelDataDir(panel: PanelSpec): string {
+  return panel.dataVolume ?? '/data'
+}
+
+/**
+ * The state *file* a panel should be pointed at, inside {@link panelDataDir}.
+ * Panel env vars take a file path — giving sqlite3 a directory is a boot crash.
+ */
+export function panelDataFile(panel: PanelSpec): string {
+  return panel.dataFile ?? `${panelDataDir(panel)}/panel.db`
+}
+
+export function panelRepoUrl(panel: PanelSpec): string {
+  return `https://github.com/${panel.repo}.git`
+}
+
+/**
+ * Every raw-TCP capability a deploy path has to publish, with its label.
+ * Panels that only declared bare `extraPorts` still get one entry each, so an
+ * older catalog entry cannot silently lose its Reality port.
+ */
+export function panelTcpPorts(panel: PanelSpec): PanelTcpPort[] {
+  if (panel.tcpPorts?.length) return panel.tcpPorts
+  return (panel.extraPorts ?? []).map((port) => ({ port, label: `TCP ${port}` }))
+}
+
+/**
+ * The raw-TCP ports **we** publish when we create a deployment: the ones whose
+ * listener binds with no switch to flip ({@link PanelTcpPort.always}).
+ *
+ * Everything else is the panel's own job. On Railway the panel drives the same
+ * `tcpProxyCreate` mutation itself, one proxy per capability its admin has
+ * enabled, and remembers the random public port it was given — so pre-opening
+ * those ports here would leave a public address in front of a listener that is
+ * still off, which is the failure both sides exist to prevent.
+ */
+export function panelDeployerTcpPorts(panel: PanelSpec): PanelTcpPort[] {
+  return panelTcpPorts(panel).filter((port) => port.always)
+}
+
+/** Branch the deployers build and the version check reads (`main` by default). */
+export function panelBranch(panel: PanelSpec): string {
+  return panel.defaultBranch ?? 'main'
+}
+
+/**
+ * Railway region every panel deploys to unless the caller asks otherwise.
+ *
+ * `europe-west4-drams3a` is Railway's **EU West (Metal) — Amsterdam, the
+ * Netherlands** region and the exact `name` from Railway's own region table
+ * (read live from `{ regions { id name country region } }`). It is the single
+ * default used by the bot, the web wizard and the API, so no deploy path can
+ * silently fall back to the US.
+ *
+ * A region is pinned through **`multiRegionConfig`**, never through the legacy
+ * `serviceInstanceUpdate.input.region` scalar: the API still *accepts* the
+ * scalar (it answers `true`) but it has no effect on a service using Railway's
+ * multi-region model — which is every service this app creates. That silent
+ * no-op is exactly why a deploy "set to the Netherlands" landed in the
+ * workspace's own preferred region, America for most accounts. See
+ * `worker/railway.ts#applyRailwayRegion`.
+ */
+export const DEFAULT_RAILWAY_REGION = 'europe-west4-drams3a'
+
+/** One selectable Railway deployment region. */
+export interface RailwayRegion {
+  /**
+   * Region `name` used as the key of `multiRegionConfig` — Railway's own region
+   * identifier, e.g. `europe-west4-drams3a`.
+   */
+  id: string
+  /**
+   * Short, stable token for payloads with a hard size limit.
+   *
+   * Telegram rejects a button whose `callback_data` is longer than **64 bytes**
+   * with `BUTTON_DATA_INVALID`, and it rejects the whole message rather than
+   * that one button — so a single oversized payload silently removes the entire
+   * keyboard. A deployment id is 36 characters, which made
+   * `srvset:g:<id>:europe-west4-drams3a` 66 bytes: the service-settings screen
+   * never rendered, and the Netherlands could not be selected at all.
+   *
+   * These are Railway's own short region ids, so they also resolve back to the
+   * same region through `RAILWAY_REGION_ALIASES`.
+   */
+  code: string
+  /** Persian label shown in the pickers. */
+  label: string
+  /** Country/area, for the secondary line. */
+  area: string
+}
+
+/**
+ * Every region Railway offers today, with the identifiers Railway itself
+ * documents (`docs.railway.com/deployments/regions`).
+ *
+ * The owner wants the Netherlands by default and the rest selectable per
+ * deployment, so this list is the one place both the bot and the web app read
+ * the choices from.
+ */
+export const RAILWAY_REGIONS: RailwayRegion[] = [
+  { id: 'europe-west4-drams3a', code: 'ams', label: 'هلند (آمستردام)', area: 'اروپای غربی' },
+  { id: 'us-west2', code: 'sfo', label: 'آمریکا (کالیفرنیا)', area: 'غرب آمریکا' },
+  { id: 'us-east4-eqdc4a', code: 'iad', label: 'آمریکا (ویرجینیا)', area: 'شرق آمریکا' },
+  { id: 'asia-southeast1-eqsg3a', code: 'sin', label: 'سنگاپور', area: 'جنوب‌شرق آسیا' },
+]
+
+/**
+ * Every other spelling of a region that reaches us → the region `name` we pin.
+ *
+ * Two families live here: Railway's own short ids (`sfo`, `ams` — what the
+ * dashboard writes into a brand-new service's `multiRegionConfig`), and the
+ * region names Railway has since superseded (`europe-west4`, `us-east4`, …).
+ * Both are translated instead of rejected, so a record written by an older build
+ * of this app, by the dashboard, or by an API caller still resolves to the right
+ * region and can never silently become "America". A code that is neither a
+ * current identifier nor listed here is genuinely unsupported and is refused.
+ */
+export const RAILWAY_REGION_ALIASES: Record<string, string> = {
+  // Railway's own short region ids — what the dashboard writes into a fresh
+  // service's `multiRegionConfig` (`{"sfo":{"numReplicas":1}}`), so they turn
+  // up as the *observed* region and must compare equal to the region we asked
+  // for instead of looking like a mismatch.
+  ams: 'europe-west4-drams3a',
+  sfo: 'us-west2',
+  iad: 'us-east4-eqdc4a',
+  sin: 'asia-southeast1-eqsg3a',
+  pdx: 'us-west1',
+  // Superseded names of the same regions (marked deprecated in Railway's region
+  // table) — a deployment made before this app pinned regions keeps working and
+  // is reported with the right name.
+  'europe-west4': 'europe-west4-drams3a',
+  'europe-west4-drams11a': 'europe-west4-drams3a',
+  'us-west2-aws': 'us-west2',
+  'us-west2-cssv9a': 'us-west2',
+  'us-east4': 'us-east4-eqdc4a',
+  'us-east-1': 'us-east4-eqdc4a',
+  'us-east4-eqdc16a': 'us-east4-eqdc4a',
+  'asia-southeast1': 'asia-southeast1-eqsg3a',
+  'asia-southeast1-drsin10a': 'asia-southeast1-eqsg3a',
+}
+
+/**
+ * Labels for the region codes Railway may return or store — both the current
+ * identifiers and the older short codes — so a record written by the dashboard
+ * (or by an older build of this app) still renders with a friendly name.
+ */
+export const RAILWAY_REGION_LABELS: Record<string, string> = {
+  'europe-west4-drams3a': 'هلند (آمستردام)',
+  'europe-west4': 'هلند (آمستردام)',
+  'europe-west4-drams11a': 'هلند (آمستردام)',
+  ams: 'هلند (آمستردام)',
+  'us-west2': 'آمریکا (کالیفرنیا)',
+  'us-west2-aws': 'آمریکا (کالیفرنیا)',
+  'us-west2-cssv9a': 'آمریکا (کالیفرنیا)',
+  sfo: 'آمریکا (کالیفرنیا)',
+  'us-west1': 'آمریکا (اورگان)',
+  pdx: 'آمریکا (اورگان)',
+  'us-east4-eqdc4a': 'آمریکا (ویرجینیا)',
+  'us-east4': 'آمریکا (ویرجینیا)',
+  'us-east-1': 'آمریکا (ویرجینیا)',
+  'us-east4-eqdc16a': 'آمریکا (ویرجینیا)',
+  iad: 'آمریکا (ویرجینیا)',
+  'asia-southeast1-eqsg3a': 'سنگاپور',
+  'asia-southeast1': 'سنگاپور',
+  'asia-southeast1-drsin10a': 'سنگاپور',
+  sin: 'سنگاپور',
+}
+
+/**
+ * The canonical identifier Railway accepts for a region code, or null when the
+ * code is not a region we support (including the older short codes, which are
+ * translated rather than rejected).
+ *
+ * Every path that talks to Railway goes through this, so a short code from an
+ * old record or an API caller can never reach Railway as-is.
+ */
+export function resolveRailwayRegion(region?: string | null): string | null {
+  const code = (region ?? '').trim().toLowerCase()
+  if (!code) return null
+  if (RAILWAY_REGIONS.some((r) => r.id === code)) return code
+  return RAILWAY_REGION_ALIASES[code] ?? null
+}
+
+/**
+ * Resolve a short region `code` — or a full region `id`, or any spelling the
+ * alias table knows — back to its catalog entry.
+ *
+ * Both forms are accepted on purpose: a keyboard that is already sitting in
+ * someone's Telegram chat carries whichever form was current when it was sent,
+ * so an old payload must keep working after the payload format changes.
+ */
+export function railwayRegionFromCode(code?: string | null): RailwayRegion | null {
+  const value = (code ?? '').trim().toLowerCase()
+  if (!value) return null
+  const direct = RAILWAY_REGIONS.find((r) => r.code === value || r.id === value)
+  if (direct) return direct
+  const canonical = resolveRailwayRegion(value)
+  return canonical ? RAILWAY_REGIONS.find((r) => r.id === canonical) ?? null : null
+}
+
+/** Human label for a Railway region code (falls back to the raw code). */
+export function railwayRegionLabel(region?: string | null): string {
+  if (!region) return RAILWAY_REGION_LABELS[DEFAULT_RAILWAY_REGION]
+  return RAILWAY_REGION_LABELS[region] ?? RAILWAY_REGION_LABELS[resolveRailwayRegion(region) ?? ''] ?? region
+}
+
+/** Is this a region code we offer? (Keeps a bad request away from Railway.) */
+export function isRailwayRegion(region: string): boolean {
+  return resolveRailwayRegion(region) !== null
+}
+
+/**
+ * Railway's `multiRegionConfig` value that pins a service to exactly one region.
+ *
+ * This is the *only* shape Railway applies: the map is replaced wholesale, so
+ * the single entry also drops the region the workspace had put the service in
+ * (`{"sfo":{"numReplicas":1}}` for a US-preferred account). Committed through
+ * `serviceInstanceUpdate.input.multiRegionConfig`.
+ */
+export function railwayMultiRegionConfig(
+  region: string,
+  numReplicas = 1,
+): Record<string, { numReplicas: number }> {
+  return { [region]: { numReplicas } }
+}
+
+/** Generated and user-specific values used to build a deployment manifest. */
+export interface PanelDeploySecrets {
+  adminPassword: string
+  secretKey: string
+  /** Railway project token, created once after the project/environment exist. */
+  railwayToken?: string
+  /**
+   * Railway project id. Railway injects the environment/service ids itself but
+   * never this one, and the panel's TCP-proxy pass needs it — see
+   * {@link PanelEnvNames.railwayProjectId}.
+   */
+  railwayProjectId?: string
+  /** Public HTTPS origin, when the platform has generated it already. */
+  publicBaseUrl?: string
+  /** Direct host exposed by a VPS deployment, if the user supplied one. */
+  directHost?: string
+}
+
+export interface PanelDeployEnvEntry {
+  name: string
+  value: string
+  /** Never include the value in an API response or generated README. */
+  secret: boolean
+}
+
+/**
+ * Complete deploy-time environment for a panel.
+ *
+ * Every automated and generated deployment path consumes this function, so the
+ * Railway, Render and VPS flows cannot silently drift apart. Static switches are
+ * derived from the catalog; passwords, signing keys, state paths and platform
+ * tokens are filled from the per-deploy values.
+ */
+export function buildPanelDeployEnv(
+  panel: PanelSpec,
+  platform: DeployTarget,
+  values: PanelDeploySecrets,
+): PanelDeployEnvEntry[] {
+  const entries: PanelDeployEnvEntry[] = []
+  const add = (name: string | undefined, value: string | undefined, secret = false) => {
+    if (name && value !== undefined) entries.push({ name, value, secret })
+  }
+
+  add(panel.env.adminPassword, values.adminPassword, true)
+  add(panel.env.secretKey, values.secretKey, true)
+  add(panel.env.dataDir, panelDataFile(panel))
+  add(panel.env.platform, platform)
+  add(panel.env.engineEnabled, 'true')
+  add(panel.env.warpEnabled, 'false')
+
+  if (platform === 'railway') {
+    // A TCP proxy makes Railway inject the proxy target as PORT. Pin both names to
+    // the HTTP edge so uvicorn and Xray never contend for the same listener.
+    add(panel.env.port, String(panel.port))
+    add(panel.env.httpPort, String(panel.port))
+    add(panel.env.publicDomain, values.publicBaseUrl)
+    add(panel.env.railwayToken, values.railwayToken, true)
+    // The panel creates its own Railway TCP proxies, and its pass refuses to run
+    // without the project id (Railway never injects it). Not secret: it is the id
+    // visible in the project's dashboard URL, and the card shows it as such.
+    add(panel.env.railwayProjectId, values.railwayProjectId)
+  } else if (platform === 'render') {
+    // Render injects PORT and RENDER_EXTERNAL_URL itself.
+    add(panel.env.publicDomain, values.publicBaseUrl)
+  } else {
+    add(panel.env.port, String(panel.port))
+    add(panel.env.publicDomain, values.publicBaseUrl)
+    add(panel.env.directHost, values.directHost ?? '')
+    add(panel.env.directPort, panel.extraPorts?.[0] ? String(panel.extraPorts[0]) : '')
+  }
+
+  return entries
+}
+
+/** Verified-liveness badge text, e.g. "بررسی‌شده ۲۰۲۶-۰۹-۱۲". */
+export function panelVerifiedLabel(panel: PanelSpec): string {
+  return panel.verifiedAt ? `بررسی‌شده ${panel.verifiedAt}` : ''
+}

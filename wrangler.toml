@@ -1,0 +1,50 @@
+name = "miliconfigpro-v1"
+main = "worker/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+# Only API routes and member status pages invoke the worker; every static
+# asset (JS/CSS/HTML/icons) is served directly by Cloudflare's edge asset
+# layer — no worker invocation, no cold start, much faster loads.
+# The panel's D1 database is resolved per-deploy by scripts/deploy.sh — see the
+# "D1 binding" note further down; do not hardcode a database_id in this file.
+# Non-secret configuration. The account named here is the panel owner: only it
+# sees the Telegram deployer bot section (nav item, routes and /api/bot-*).
+[vars]
+OWNER_EMAIL = "milad201400@gmail.com"
+# Optional: public URL of the panel UI when it is served from a domain other
+# than this Worker (a static host, GitHub Pages, …). The bot's "باز کردن پنل"
+# menu button and links inside bot screens use it. Empty = this Worker's origin.
+PANEL_URL = ""
+
+# ── D1 binding ───────────────────────────────────────────────────────────────
+# The binding is NOT declared statically here on purpose. A hardcoded
+# database_id is an account-scoped UUID: the moment the project is built or
+# deployed from another Cloudflare account (or the database is recreated after
+# a migration), wrangler fails the whole deploy with:
+#   D1 binding 'DB' references database '<id>' which was not found [code: 10181]
+# Instead, `sh ./scripts/deploy.sh` resolves the database BY NAME against
+# whatever account the CLOUDFLARE_API_TOKEN belongs to (`wrangler d1 list`,
+# creating it if missing) and generates wrangler.deploy.toml with the real id.
+# Set the name / override the id with the D1_DATABASE_NAME / D1_DATABASE_ID
+# environment variables. See scripts/d1-restore.sh for moving data across
+# accounts.
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*", "/status/*"]
+
+# Move the worker close to the D1 database — the panel does many sequential
+# D1 round-trips per request, so co-locating them cuts real-world latency.
+# (Enabled programmatically per-deploy via the script settings API in deploy.ts.)
+
+# The dedicated panel must not drift behind its upstream repository, so a cron
+# collector rebuilds every deployment that opted into "بروزرسانی خودکار" when a
+# newer commit appears (see the `scheduled` handler in worker/index.ts).
+[triggers]
+crons = ["17 */6 * * *"]
+
+[observability]
+enabled = true

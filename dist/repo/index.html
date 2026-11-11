@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>miliconfig — Deploy Wizard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#080a0e; --ink2:#0b0e14; --surface:#10141c; --surface2:#141a24;
+  --line:rgba(255,255,255,.075); --line2:rgba(255,255,255,.15);
+  --t0:#eef2f7; --t1:#9aa6b8; --t2:#5d6a7d;
+  --lime:#c8f135; --lime-d:#a6cf1d; --blue:#5b8cff; --amber:#ffb454; --rose:#ff5d73; --green:#3ddc84;
+  --g-lime:rgba(200,241,53,.13); --g-blue:rgba(91,140,255,.13);
+  --shadow:0 26px 60px -26px rgba(0,0,0,.8);
+  --r:13px;
+  --disp:'Bricolage Grotesque',sans-serif;
+  --body:'Manrope',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+[data-theme="light"]{
+  --ink:#eef1f6; --ink2:#f6f8fc; --surface:#ffffff; --surface2:#f1f4fa;
+  --line:rgba(12,18,30,.09); --line2:rgba(12,18,30,.17);
+  --t0:#0d1422; --t1:#4a566b; --t2:#8a93a6;
+  --lime:#7fae00; --lime-d:#699200; --blue:#2f5fe0; --amber:#c47a00; --rose:#d6314a; --green:#159a52;
+  --g-lime:rgba(127,174,0,.10); --g-blue:rgba(47,95,224,.09);
+  --shadow:0 22px 50px -24px rgba(20,30,55,.26);
+}
+html.lang-fa body,html.lang-fa .disp{font-family:'Vazirmatn',var(--body)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--body); background:var(--ink); color:var(--t0);
+  min-height:100vh; overflow-x:hidden; position:relative; line-height:1.55;
+  transition:background .35s,color .35s;
+}
+body::before{content:"";position:fixed;inset:0;z-index:-3;
+  background:radial-gradient(1200px 700px at 8% -10%,var(--g-blue),transparent 60%),
+             radial-gradient(1000px 620px at 100% 0%,var(--g-lime),transparent 55%),
+             linear-gradient(165deg,var(--ink2),var(--ink) 60%);}
+body::after{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:30px 30px;
+  -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 8%,transparent 80%);mask-image:radial-gradient(ellipse at 50% 0%,#000 8%,transparent 80%);opacity:.6;}
+.glow{position:fixed;border-radius:50%;filter:blur(70px);z-index:-1;pointer-events:none;will-change:transform;transition:transform .25s ease-out}
+.glow.a{width:420px;height:420px;left:-120px;top:8%;background:var(--g-blue)}
+.glow.b{width:360px;height:360px;right:-90px;bottom:6%;background:var(--g-lime)}
+::selection{background:var(--lime);color:#0a0d02}
+::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:linear-gradient(var(--lime),var(--blue));border-radius:99px}::-webkit-scrollbar-track{background:transparent}
+
+.bar{position:sticky;top:0;z-index:80;display:flex;align-items:center;gap:14px;
+  padding:12px clamp(14px,3.5vw,30px);background:linear-gradient(180deg,var(--surface2),var(--surface));
+  border-bottom:1px solid var(--line);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.bar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--lime),var(--blue),transparent);
+  background-size:200% 100%;animation:sheen 7s linear infinite;opacity:.5}
+@keyframes sheen{to{background-position:200% 0}}
+.brand{display:flex;align-items:center;gap:11px}
+.brand .mk{width:30px;height:30px;flex:none;position:relative;border-radius:8px;
+  background:conic-gradient(from 200deg,var(--lime),var(--blue),var(--lime));box-shadow:0 0 16px var(--g-lime)}
+.brand .mk::after{content:"";position:absolute;inset:5px;border-radius:5px;background:var(--surface)}
+.brand .mk::before{content:"";position:absolute;inset:11px;border-radius:2px;background:var(--lime);box-shadow:0 0 9px var(--lime);z-index:1;transform:rotate(45deg)}
+.brand b{font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.04em}
+.brand small{display:block;font-size:9.5px;color:var(--t2);letter-spacing:.22em;font-weight:700;text-transform:uppercase}
+.crumb{font-family:var(--mono);font-size:11.5px;color:var(--t2);display:none}
+.crumb b{color:var(--lime)}
+@media(min-width:760px){.crumb{display:block}}
+.spacer{flex:1}
+.sig{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;
+  background:var(--surface);border:1px solid var(--line);color:var(--t1)}
+.sig .d{width:7px;height:7px;border-radius:50%;background:var(--t2)}
+.sig[data-s="verify"] .d{background:var(--amber);box-shadow:0 0 9px var(--amber);animation:pulse 1s infinite}
+.sig[data-s="online"] .d{background:var(--green);box-shadow:0 0 9px var(--green)}
+.sig[data-s="error"] .d{background:var(--rose);box-shadow:0 0 9px var(--rose)}
+@keyframes pulse{50%{opacity:.4}}
+.ib,.sel select{appearance:none;-webkit-appearance:none;background:var(--surface);border:1px solid var(--line);
+  color:var(--t1);border-radius:9px;font-family:var(--body);font-size:12px;font-weight:600;cursor:pointer;transition:.2s}
+.ib{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+.ib:hover{border-color:var(--line2);color:var(--t0);transform:translateY(-1px)}
+.sel{position:relative}.sel select{padding:8px 30px 8px 12px;outline:none}
+.sel::after{content:"▾";position:absolute;inset-inline-end:10px;top:50%;transform:translateY(-50%);color:var(--t2);pointer-events:none;font-size:10px}
+.sel select option{background:var(--surface2);color:var(--t0)}
+
+.prog{height:2px;background:var(--line);position:relative}
+.prog i{position:absolute;inset-inline-start:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--lime),var(--blue));transition:width .5s cubic-bezier(.22,1,.36,1);box-shadow:0 0 10px var(--g-lime)}
+
+.wrap{max-width:1140px;margin:0 auto;padding:26px clamp(14px,3.5vw,30px) 90px;
+  display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:start}
+@media(max-width:880px){.wrap{grid-template-columns:1fr;gap:16px}}
+
+.rail{position:sticky;top:78px}
+@media(max-width:880px){.rail{position:static;overflow-x:auto;padding-bottom:4px}}
+.rail h4{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--t2);margin-bottom:14px}
+.steps{display:flex;flex-direction:column;gap:2px}
+@media(max-width:880px){.steps{flex-direction:row;gap:0;min-width:max-content}}
+.step{display:flex;gap:12px;padding:11px 8px;position:relative;opacity:.5;transition:.3s}
+@media(max-width:880px){.step{flex-direction:column;align-items:center;width:88px;padding:8px 4px;text-align:center;gap:6px}.step .sd{display:none}}
+.step::before{content:"";position:absolute;inset-inline-start:21px;top:0;bottom:0;width:1px;background:var(--line)}
+.step:first-child::before{top:50%}
+.step:last-child::before{bottom:50%}
+@media(max-width:880px){.step::before{inset-inline-start:0;inset-inline-end:0;top:21px;bottom:auto;width:auto;height:1px}.step:first-child::before{inset-inline-start:50%}.step:last-child::before{inset-inline-end:50%}}
+.step .n{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;
+  font-family:var(--mono);font-size:12px;font-weight:700;background:var(--surface);border:1px solid var(--line2);color:var(--t2);position:relative;z-index:1;transition:.3s}
+.step .st b{display:block;font-family:var(--disp);font-weight:700;font-size:13.5px;color:var(--t1);transition:.3s}
+.step .sd{font-size:11.5px;color:var(--t2);line-height:1.5;margin-top:2px}
+.step.active{opacity:1}.step.active .n{border-color:var(--lime);color:var(--lime);box-shadow:0 0 14px var(--g-lime)}
+.step.active .st b{color:var(--t0)}
+.step.done{opacity:.92}.step.done .n{background:var(--lime);border-color:var(--lime);color:#0a0d02}
+.step.done::before{background:linear-gradient(var(--lime),var(--line))}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);position:relative;overflow:hidden}
+.panel::before,.panel::after{content:"";position:absolute;width:13px;height:13px;pointer-events:none;opacity:.7}
+.panel::before{top:8px;inset-inline-start:8px;border-top:1.5px solid var(--lime);border-inline-start:1.5px solid var(--lime)}
+.panel::after{bottom:8px;inset-inline-end:8px;border-bottom:1.5px solid var(--blue);border-inline-end:1.5px solid var(--blue)}
+.pad{padding:clamp(18px,3vw,28px)}
+.sec{display:none}.sec.on{display:block;animation:enter .45s cubic-bezier(.22,1,.36,1)}
+@keyframes enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.eyebrow{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--lime);display:flex;align-items:center;gap:8px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--lime);box-shadow:0 0 8px var(--lime)}
+.sec h2{font-family:var(--disp);font-size:clamp(20px,3vw,27px);font-weight:800;letter-spacing:-.01em;margin:9px 0 6px}
+.sec .lede{color:var(--t1);font-size:13.5px;max-width:54ch}
+
+.field{margin-top:16px}
+.field>label{display:block;font-size:12px;font-weight:700;color:var(--t1);margin-bottom:7px;letter-spacing:.02em}
+.field .hint{font-size:11.5px;color:var(--t2);margin-top:6px;line-height:1.6}
+.input,select.input{width:100%;padding:11px 13px;border-radius:10px;outline:none;
+  background:var(--ink2);border:1px solid var(--line);color:var(--t0);font-family:var(--body);font-size:13.5px;transition:.2s}
+.input.mono{font-family:var(--mono);font-size:12.5px;letter-spacing:.02em}
+.input::placeholder{color:var(--t2)}
+.input:focus,select.input:focus{border-color:var(--lime);box-shadow:0 0 0 3px var(--g-lime)}
+.input.bad{border-color:var(--rose);box-shadow:0 0 0 3px rgba(255,93,115,.14)}
+select.input option{background:var(--surface2)}
+.row{display:flex;gap:10px}.row .input{flex:1}
+.errline{color:var(--rose);font-size:12px;margin-top:7px;display:none;font-weight:600}
+.errline.on{display:block;animation:shake .35s}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.with-btn{position:relative}.with-btn .input{padding-inline-end:46px}
+.with-btn button{position:absolute;inset-inline-end:6px;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--t1);cursor:pointer;font-size:14px;transition:.2s}
+.with-btn button:hover{color:var(--lime);border-color:var(--lime)}
+
+.check{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;margin-top:12px}
+.check input{display:none}
+.check .bx{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line2);flex:none;display:grid;place-items:center;transition:.2s;color:transparent;font-size:11px;font-weight:900}
+.check input:checked+.bx{background:var(--lime);border-color:var(--lime);color:#0a0d02}
+.check .lb{font-size:12.5px;color:var(--t1);font-weight:600}
+
+.scopes{margin-top:14px;border:1px dashed var(--line2);border-radius:11px;padding:13px 14px;background:var(--ink2)}
+.scopes .hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.scopes .hd span{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--t2)}
+.scopes ul{list-style:none;display:grid;gap:6px}
+.scopes li{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-size:11.5px;color:var(--t1)}
+.scopes li .tag{font-size:9px;font-weight:800;letter-spacing:.1em;padding:2px 6px;border-radius:5px;text-transform:uppercase;flex:none}
+.scopes li .tag.req{background:var(--g-lime);color:var(--lime)}
+.scopes li .tag.opt{background:var(--g-blue);color:var(--blue)}
+.scopes li .nm{flex:1;word-break:break-word}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:520px){.seg{grid-template-columns:1fr}}
+.seg button{text-align:start;padding:15px 16px;border-radius:12px;background:var(--ink2);border:1px solid var(--line);
+  color:var(--t1);cursor:pointer;transition:.22s;position:relative;overflow:hidden;font-family:var(--body)}
+.seg button::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.06),transparent);transform:translateX(-120%);transition:.5s}
+.seg button:hover::before{transform:translateX(120%)}
+.seg button b{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-size:15px;font-weight:700;color:var(--t0)}
+.seg button small{display:block;font-size:11.5px;color:var(--t2);margin-top:5px;line-height:1.5}
+.seg button .beta{font-family:var(--mono);font-size:9px;background:var(--g-blue);color:var(--blue);padding:1px 6px;border-radius:5px;letter-spacing:.1em}
+.seg button[aria-checked="true"]{border-color:var(--lime);background:linear-gradient(150deg,var(--g-lime),var(--ink2));box-shadow:0 0 0 1px var(--lime),0 10px 26px -14px var(--g-lime)}
+.seg button[aria-checked="true"] b{color:var(--lime)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;padding:11px 20px;border-radius:10px;
+  border:1px solid var(--line2);background:var(--surface2);color:var(--t0);font-family:var(--body);font-size:13px;font-weight:700;
+  cursor:pointer;transition:.22s;letter-spacing:.02em;position:relative;overflow:hidden}
+.btn::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.1),transparent);transform:translateX(-120%);transition:.5s}
+.btn:hover::before{transform:translateX(120%)}
+.btn:hover{transform:translateY(-2px);border-color:var(--lime)}
+.btn:active{transform:none}
+.btn-primary{background:linear-gradient(120deg,var(--lime),var(--lime-d));border-color:transparent;color:#0a0d02;box-shadow:0 10px 28px -10px var(--g-lime)}
+.btn-primary:hover{filter:brightness(1.06);box-shadow:0 16px 36px -10px var(--g-lime)}
+.btn-ghost{background:transparent}
+.btn[disabled]{opacity:.5;pointer-events:none}
+.btn-block{width:100%}
+.actions{display:flex;gap:10px;margin-top:22px;align-items:center}
+.actions .spacer{flex:1}
+
+.log{margin-top:16px;background:#05070a;border:1px solid var(--line);border-radius:11px;
+  padding:13px 14px;font-family:var(--mono);font-size:11.5px;line-height:1.85;
+  max-height:300px;overflow-y:auto;color:var(--t1)}
+[data-theme="light"] .log{background:#0d1117;color:#c9d3e0}
+.log .ln{display:flex;gap:9px;animation:fade .3s ease}
+@keyframes fade{from{opacity:0;transform:translateX(-5px)}to{opacity:1}}
+.log .tm{color:var(--t2);flex:none}
+.log .step{color:var(--blue)}.log .ok{color:var(--green)}.log .err{color:var(--rose)}.log .warn{color:var(--amber)}
+.log .caret{display:inline-block;width:7px;height:13px;background:var(--lime);margin-inline-start:2px;animation:blink 1s steps(2) infinite;vertical-align:-2px}
+@keyframes blink{50%{opacity:0}}
+
+.result{margin-top:18px;border:1px solid var(--lime);border-radius:13px;padding:20px;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,var(--g-lime),var(--surface));animation:enter .5s cubic-bezier(.22,1,.36,1)}
+.result .ring{position:absolute;inset-inline-end:-30px;top:-30px;width:120px;height:120px;border-radius:50%;border:2px solid var(--lime);opacity:.25;animation:ringp 2.4s ease-out infinite}
+@keyframes ringp{0%{transform:scale(.6);opacity:.4}100%{transform:scale(1.5);opacity:0}}
+.result .chk{width:42px;height:42px;border-radius:50%;background:var(--lime);color:#0a0d02;display:grid;place-items:center;font-size:20px;font-weight:900;box-shadow:0 0 22px var(--g-lime)}
+.result h3{font-family:var(--disp);font-size:19px;font-weight:800;margin:12px 0 4px}
+.result p{color:var(--t1);font-size:13px}
+.linkbox{margin-top:14px}
+.linkbox .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--t2);margin-bottom:5px}
+.linkrow{display:flex;gap:8px;align-items:stretch;margin-bottom:12px}
+.linkrow .v{flex:1;font-family:var(--mono);font-size:12px;color:var(--lime);background:#05070a;border:1px solid var(--line);
+  border-radius:9px;padding:10px 12px;word-break:break-all;user-select:all}
+[data-theme="light"] .linkrow .v{background:#0d1117}
+.linkrow .btn{padding:0 14px;flex:none}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.meta span{font-family:var(--mono);font-size:10.5px;color:var(--t2);background:var(--ink2);border:1px solid var(--line);padding:4px 9px;border-radius:7px}
+.note{margin-top:14px;font-size:11.5px;color:var(--amber);display:flex;gap:8px;line-height:1.6}
+
+.foot{max-width:1140px;margin:0 auto;padding:0 clamp(14px,3.5vw,30px) 40px;color:var(--t2);font-size:11.5px;text-align:center}
+.foot a{color:var(--blue);text-decoration:none}
+.toast{position:fixed;bottom:22px;inset-inline-start:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface2);border:1px solid var(--lime);color:var(--t0);padding:10px 18px;border-radius:10px;
+  font-size:12.5px;font-weight:600;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:200;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== quick-start onboarding rail ===== */
+.qs{margin:18px 0 4px}
+.qs-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--t2);margin-bottom:13px;display:flex;align-items:center;gap:9px}
+.qs-h::before{content:"";width:16px;height:2px;background:var(--blue);box-shadow:0 0 8px var(--g-blue)}
+.qs-track{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;position:relative}
+@media(max-width:620px){.qs-track{grid-template-columns:1fr}}
+.qs-card{position:relative;text-align:start;padding:15px 15px 14px;border-radius:12px;background:var(--ink2);
+  border:1px solid var(--line);cursor:default;transition:transform .24s ease,border-color .24s,box-shadow .24s;overflow:hidden}
+.qs-card::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.05),transparent);transform:translateX(-120%);transition:.55s}
+.qs-card:hover::before{transform:translateX(120%)}
+.qs-card:hover{transform:translateY(-3px);border-color:var(--line2);box-shadow:0 14px 30px -16px var(--g-blue)}
+.qs-card .top{display:flex;align-items:center;gap:11px;margin-bottom:9px}
+.qs-card .num{width:26px;height:26px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:12px;
+  background:var(--surface);border:1px solid var(--line2);color:var(--t1)}
+.qs-card .ic{font-size:17px;line-height:1}
+.qs-card b{display:block;font-family:var(--disp);font-size:14px;font-weight:700;color:var(--t0);margin-bottom:3px}
+.qs-card small{display:block;font-size:11.5px;color:var(--t2);line-height:1.55;min-height:32px}
+.qs-card .go{margin-top:11px;display:inline-flex;align-items:center;gap:7px;font-family:var(--body);font-size:12px;font-weight:700;
+  color:var(--blue);background:transparent;border:1px solid var(--line2);border-radius:9px;padding:8px 13px;cursor:pointer;transition:.2s;width:100%;justify-content:center}
+.qs-card .go:hover{color:var(--lime);border-color:var(--lime);box-shadow:0 0 16px var(--g-lime)}
+.qs-card.primary{border-color:var(--lime);background:linear-gradient(150deg,var(--g-lime),var(--ink2));box-shadow:0 0 0 1px var(--lime),0 12px 30px -16px var(--g-lime)}
+.qs-card.primary .num{background:var(--lime);border-color:var(--lime);color:#0a0d02}
+.qs-card.primary .go{background:linear-gradient(120deg,var(--lime),var(--lime-d));border-color:transparent;color:#0a0d02}
+.qs-card.primary .go:hover{filter:brightness(1.07);box-shadow:0 10px 24px -8px var(--g-lime)}
+.qs-card.primary::after{content:"";position:absolute;inset-inline-end:12px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px var(--lime);animation:qspulse 1.6s ease-in-out infinite}
+@keyframes qspulse{50%{opacity:.35;transform:scale(.7)}}
+@media(min-width:621px){
+  .qs-track::before{content:"";position:absolute;top:28px;inset-inline-start:14%;inset-inline-end:14%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--line2),var(--line2),transparent);z-index:0}
+  .qs-card{z-index:1}
+}
+
+/* ===== guided token modal ===== */
+.ef-modal{position:fixed;inset:0;z-index:400;display:none;place-items:center;padding:18px;
+  background:rgba(4,6,10,.66);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.ef-modal.on{display:grid;animation:efmfade .25s ease}
+@keyframes efmfade{from{opacity:0}to{opacity:1}}
+.ef-modal-card{width:min(560px,100%);max-height:88vh;overflow-y:auto;background:var(--surface);border:1px solid var(--line2);
+  border-radius:var(--r);box-shadow:var(--shadow);position:relative;padding:clamp(18px,3vw,26px);animation:efmpop .32s cubic-bezier(.22,1,.36,1)}
+@keyframes efmpop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.ef-modal-card::before,.ef-modal-card::after{content:"";position:absolute;width:13px;height:13px;pointer-events:none;opacity:.7}
+.ef-modal-card::before{top:8px;inset-inline-start:8px;border-top:1.5px solid var(--lime);border-inline-start:1.5px solid var(--lime)}
+.ef-modal-card::after{bottom:8px;inset-inline-end:8px;border-bottom:1.5px solid var(--blue);border-inline-end:1.5px solid var(--blue)}
+.ef-modal-x{position:absolute;top:12px;inset-inline-end:12px;width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+  background:var(--ink2);color:var(--t1);cursor:pointer;font-size:15px;transition:.2s}
+.ef-modal-x:hover{color:var(--rose);border-color:var(--rose)}
+.ef-modal-card .eyebrow{margin-bottom:6px}
+.ef-modal-card h3{font-family:var(--disp);font-size:20px;font-weight:800;margin-bottom:6px}
+.ef-modal-card .lede{font-size:12.5px;color:var(--t1);line-height:1.7}
+.ef-modal-card .lede b{color:var(--lime)}
+.ef-openbtn{margin:14px 0 4px;width:100%;justify-content:center;padding:12px;font-size:13px}
+.ef-steps{margin:12px 0 4px;font-size:12px;color:var(--t1);line-height:1.8;padding:12px 14px;border:1px dashed var(--line2);border-radius:10px;background:var(--ink2)}
+.ef-steps span{color:var(--lime);font-family:var(--mono);font-weight:700}
+.ef-progwrap{margin:14px 0 8px}
+.ef-progtop{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.ef-progtop b{color:var(--lime)}
+.ef-progbar{height:4px;border-radius:99px;background:var(--line);overflow:hidden}
+.ef-progbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--lime),var(--blue));transition:width .4s cubic-bezier(.22,1,.36,1);box-shadow:0 0 8px var(--g-lime)}
+.ef-ck{list-style:none;display:grid;gap:7px}
+.ef-ck-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:10px;background:var(--ink2);border:1px solid var(--line);transition:.25s}
+.ef-ck-item.copied{border-color:var(--green);background:linear-gradient(150deg,rgba(61,220,132,.10),var(--ink2))}
+.ef-ck-item .badge{font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:6px;flex:none}
+.ef-ck-item .badge.acc{background:var(--g-blue);color:var(--blue)}
+.ef-ck-item .badge.zon{background:var(--g-lime);color:var(--lime)}
+.ef-ck-item .res{flex:1;font-family:var(--mono);font-size:12px;color:var(--t0);word-break:break-word}
+.ef-ck-item .eff{font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:6px;flex:none;
+  background:rgba(255,180,84,.12);color:var(--amber)}
+.ef-ck-item .eff.read{background:var(--g-blue);color:var(--blue)}
+.ef-ck-item .cp{width:30px;height:30px;flex:none;border-radius:8px;border:1px solid var(--line2);background:var(--surface);color:var(--t1);cursor:pointer;font-size:13px;transition:.2s;display:grid;place-items:center}
+.ef-ck-item .cp:hover{color:var(--lime);border-color:var(--lime)}
+.ef-ck-item.copied .cp{color:var(--green);border-color:var(--green)}
+.ef-ck-item .tick{display:none;color:var(--green);font-weight:900;font-size:13px}
+.ef-ck-item.copied .tick{display:inline}
+.ef-ck-item.copied .cp{display:none}
+.ef-note{margin-top:12px;font-size:11px;color:var(--t2);line-height:1.6;display:flex;gap:7px}
+.ef-alldone{margin-top:12px;display:none;align-items:center;gap:9px;padding:11px 13px;border-radius:10px;background:linear-gradient(150deg,var(--g-lime),var(--ink2));border:1px solid var(--lime);color:var(--lime);font-size:12.5px;font-weight:700}
+.ef-alldone.on{display:flex;animation:efmfade .3s}
+.ef-modal-foot{display:flex;gap:10px;margin-top:16px;align-items:center}
+.ef-modal-foot .spacer{flex:1}
+</style>
+</head>
+<body>
+<div class="glow a"></div><div class="glow b"></div>
+
+<header class="bar">
+  <div class="brand"><span class="mk"></span><span><b>miliconfig</b><small data-i18n="brand_sub">deploy wizard</small></span></div>
+  <span class="crumb">~/deploy › <b id="crumbStep" data-i18n="step_token_t">token</b></span>
+  <span class="spacer"></span>
+  <span class="sig" id="sig" data-s="idle"><span class="d"></span><span id="sigTxt" data-i18n="sig_idle">idle</span></span>
+  <div class="sel"><select id="langSel"><option value="en">EN</option><option value="fa">FA</option></select></div>
+  <button class="ib" id="themeBtn" aria-label="theme">☀</button>
+</header>
+<div class="prog"><i id="progBar"></i></div>
+
+<main class="wrap">
+  <aside class="rail">
+    <h4 data-i18n="rail_title">deployment pipeline</h4>
+    <div class="steps" id="steps">
+      <div class="step" data-step="1"><span class="n">1</span><div class="st"><b data-i18n="step_token_t">API token</b><div class="sd" data-i18n="step_token_d">verify & scope check</div></div></div>
+      <div class="step" data-step="2"><span class="n">2</span><div class="st"><b data-i18n="step_account_t">account</b><div class="sd" data-i18n="step_account_d">target cloudflare account</div></div></div>
+      <div class="step" data-step="3"><span class="n">3</span><div class="st"><b data-i18n="step_method_t">method</b><div class="sd" data-i18n="step_method_d">workers or pages</div></div></div>
+      <div class="step" data-step="4"><span class="n">4</span><div class="st"><b data-i18n="step_config_t">configure</b><div class="sd" data-i18n="step_config_d">name, uuid, domain</div></div></div>
+      <div class="step" data-step="5"><span class="n">5</span><div class="st"><b data-i18n="step_deploy_t">deploy</b><div class="sd" data-i18n="step_deploy_d">build & ship to edge</div></div></div>
+    </div>
+  </aside>
+
+  <section class="panel"><div class="pad">
+
+    <!-- STEP 1 -->
+    <div class="sec on" data-sec="1">
+      <span class="eyebrow" data-i18n="ey_auth">authorization</span>
+      <h2 data-i18n="h_token">Hand over the keys</h2>
+      <p class="lede" data-i18n="lede_token">Paste a Cloudflare API token. It never leaves your browser except to call api.cloudflare.com directly. Grant only the scopes below.</p>
+      <div class="field">
+        <label data-i18n="f_token_label">Cloudflare API token</label>
+        <div class="with-btn"><input class="input mono" id="token" type="password" autocomplete="off" spellcheck="false" data-i18n-ph="f_token_ph" placeholder="paste token…"><button id="eyeBtn" type="button" aria-label="show">👁</button></div>
+        <div class="errline" id="tokenErr"></div>
+        <label class="check"><input type="checkbox" id="remember"><span class="bx">✓</span><span class="lb" data-i18n="f_remember">Remember token on this device (localStorage)</span></label>
+        <div class="hint" data-i18n="f_remember_help">Off by default. If enabled, the token is stored in your browser only — clear it anytime with Reset.</div>
+      </div>
+
+      <div class="qs">
+        <div class="qs-h" data-i18n="qs_title">quick start path</div>
+        <div class="qs-track">
+          <div class="qs-card">
+            <div class="top"><span class="num">1</span><span class="ic">✉</span></div>
+            <b data-i18n="qs_step1_t">Temp email</b>
+            <small data-i18n="qs_step1_d">A disposable inbox for the sign-up — no personal mail needed.</small>
+            <button class="go" id="qsEmail" type="button"><span data-i18n="qs_step1_btn">Get email</span> <span>↗</span></button>
+          </div>
+          <div class="qs-card">
+            <div class="top"><span class="num">2</span><span class="ic">☁</span></div>
+            <b data-i18n="qs_step2_t">Create CF account</b>
+            <small data-i18n="qs_step2_d">Sign up on Cloudflare using that temp email and verify it.</small>
+            <button class="go" id="qsSignup" type="button"><span data-i18n="qs_step2_btn">Sign up</span> <span>↗</span></button>
+          </div>
+          <div class="qs-card primary">
+            <div class="top"><span class="num">3</span><span class="ic">🔑</span></div>
+            <b data-i18n="qs_step3_t">Create token</b>
+            <small data-i18n="qs_step3_d">Permissions are pre-loaded — open guided builder.</small>
+            <button class="go" id="qsToken" type="button"><span data-i18n="qs_step3_btn">Build token</span> <span>⇢</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="scopes">
+        <div class="hd"><span data-i18n="scopes_title">required token permissions</span><button class="btn" id="copyScopes" style="padding:6px 12px;font-size:11px" data-i18n="copy_scopes">copy list</button></div>
+        <ul id="scopeList"></ul>
+        <div class="hint" style="margin-top:10px"><a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" rel="noopener" class="link" style="color:var(--blue);font-weight:700;text-decoration:none" data-i18n="open_dash">Create a token in the dashboard →</a> <span data-i18n="scopes_hint">use “Custom token”, add the permissions above, scope to “All accounts” / “All zones”.</span></div>
+      </div>
+      <div class="actions"><span class="spacer"></span><button class="btn btn-primary" id="act1" data-i18n="f_verify_btn">Verify & continue →</button></div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="sec" data-sec="2">
+      <span class="eyebrow" data-i18n="ey_target">target</span>
+      <h2 data-i18n="h_account">Choose the account</h2>
+      <p class="lede" data-i18n="lede_account">The worker and its KV namespace will be created under this account.</p>
+      <div class="field"><label data-i18n="f_account_label">Cloudflare account</label><select class="input" id="account"></select><div class="errline" id="accountErr"></div></div>
+      <div class="actions"><button class="btn btn-ghost" data-back data-i18n="btn_back">← Back</button><span class="spacer"></span><button class="btn btn-primary" id="act2" data-i18n="btn_continue">Continue →</button></div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div class="sec" data-sec="3">
+      <span class="eyebrow" data-i18n="ey_runtime">runtime</span>
+      <h2 data-i18n="h_method">Pick the runtime</h2>
+      <p class="lede" data-i18n="lede_method">Both host the same script. Workers is the recommended, fully-supported path.</p>
+      <div class="seg" id="methodSeg" role="radiogroup">
+        <button type="button" role="radio" aria-checked="true" data-method="workers"><b>⚡ <span data-i18n="method_workers">Cloudflare Workers</span></b><small data-i18n="method_workers_d">Native KV + vars binding. One-click, robust.</small></button>
+        <button type="button" role="radio" aria-checked="false" data-method="pages"><b>📄 <span data-i18n="method_pages">Cloudflare Pages</span> <span class="beta">beta</span></b><small data-i18n="method_pages_d">Deployed as a _worker.js function. Bindings set via project config.</small></button>
+      </div>
+      <div class="actions"><button class="btn btn-ghost" data-back data-i18n="btn_back">← Back</button><span class="spacer"></span><button class="btn btn-primary" id="act3" data-i18n="btn_continue">Continue →</button></div>
+    </div>
+
+    <!-- STEP 4 -->
+    <div class="sec" data-sec="4">
+      <span class="eyebrow" data-i18n="ey_build">build config</span>
+      <h2 data-i18n="h_config">Name & tune it</h2>
+      <p class="lede" data-i18n="lede_config">These become the worker name, its access secret, and optional routing.</p>
+      <div class="field"><label data-i18n="f_name_label">Worker / project name</label><div class="with-btn"><input class="input mono" id="scriptName" spellcheck="false"><button id="rerollName" type="button" title="regenerate">⟳</button></div><div class="hint" data-i18n="f_name_help">lowercase, digits, hyphens · 1–63 chars · becomes &lt;name&gt;.workers.dev</div><div class="errline" id="nameErr"></div></div>
+      <div class="field"><label data-i18n="f_uuid_label">Access secret / UUID (variable u)</label><div class="with-btn"><input class="input mono" id="uuid" spellcheck="false"><button id="rerollUuid" type="button" title="regenerate">⟳</button></div><div class="hint" data-i18n="f_uuid_help">this is your private panel key — keep it secret</div></div>
+      <div class="field"><label data-i18n="f_path_label">Custom path (variable d) — optional</label><input class="input mono" id="customPath" spellcheck="false" data-i18n-ph="f_path_ph" placeholder="e.g. mypath"><div class="hint" data-i18n="f_path_help">if set, the panel is reached via /&lt;path&gt; instead of /&lt;uuid&gt;</div><div class="errline" id="pathErr"></div></div>
+      <div class="field"><label data-i18n="f_domain_label">Custom domain — optional</label><input class="input mono" id="customDomain" spellcheck="false" data-i18n-ph="f_domain_ph" placeholder="e.g. relay.example.com"><div class="hint" data-i18n="f_domain_help">requires a zone on this account (Zone · Read). Leave empty to use workers.dev / pages.dev</div><div class="errline" id="domainErr"></div></div>
+      <div class="field" id="zoneField" style="display:none"><label data-i18n="f_zone_label">Zone for the custom domain</label><select class="input" id="zone"></select></div>
+      <details style="margin-top:14px"><summary style="cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--t2)" data-i18n="adv_src">advanced · worker source</summary>
+        <div class="field"><label data-i18n="f_source_label">Source URL override</label><input class="input mono" id="sourceUrl" spellcheck="false"><div class="hint" data-i18n="f_source_help">the wizard first reads ./worker-source.js next to itself, then this URL</div></div>
+      </details>
+      <div class="actions"><button class="btn btn-ghost" data-back data-i18n="btn_back">← Back</button><span class="spacer"></span><button class="btn btn-primary" id="act4" data-i18n="btn_deploy">⚡ Deploy now</button></div>
+    </div>
+
+    <!-- STEP 5 -->
+    <div class="sec" data-sec="5">
+      <span class="eyebrow" data-i18n="ey_ship">shipping</span>
+      <h2 data-i18n="h_deploy">Deploying to the edge</h2>
+      <div class="log" id="log" role="log" aria-live="polite"></div>
+      <div id="resultSlot"></div>
+      <div class="actions" id="deployActions"><button class="btn btn-ghost" data-back data-i18n="btn_back">← Back</button><span class="spacer"></span><button class="btn" id="retryBtn" style="display:none" data-i18n="btn_retry">↻ Retry</button></div>
+    </div>
+
+  </div></section>
+</main>
+
+<footer class="foot"><span data-i18n="foot_note">miliconfig runs entirely in your browser. Token is sent only to api.cloudflare.com. Source on</span> <a href="https://github.com/milic0nf1g/wizard" target="_blank" rel="noopener">GitHub</a>.</footer>
+
+<div class="ef-modal" id="efModal" role="dialog" aria-modal="true" aria-labelledby="efModalTitle">
+  <div class="ef-modal-card">
+    <button class="ef-modal-x" id="efModalClose" type="button" aria-label="close">✕</button>
+    <span class="eyebrow" data-i18n="modal_ey">guided · cloudflare token</span>
+    <h3 id="efModalTitle" data-i18n="modal_title">Build your API token</h3>
+    <p class="lede" data-i18n="modal_lede">Click the button below to open Cloudflare with pre-loaded permissions. Then follow the steps: click <b>Create Token</b>, then <b>Continue to summary</b>, and finally copy your token.</p>
+    <button class="btn btn-primary ef-openbtn" id="efModalOpen" type="button"><span>↗</span> <span data-i18n="modal_open">Open Cloudflare Token Builder</span></button>
+    <div class="ef-steps" data-i18n="modal_steps">On that page: <span>Create Token</span> → next to "Custom token" click <span>Get started</span> → permissions are already selected → click <span>Continue to summary</span> → <span>Create Token</span> → copy the token and paste it above.</div>
+    <div class="ef-progwrap">
+      <div class="ef-progtop"><span data-i18n="modal_progress">copied</span><span><b id="efProgNum">0</b> / <span id="efProgTot">7</span></span></div>
+      <div class="ef-progbar"><i id="efProgBar"></i></div>
+    </div>
+    <ul class="ef-ck" id="efCkList"></ul>
+    <div class="ef-alldone" id="efAllDone"><span>✓</span><span data-i18n="modal_alldone">All set! Now hit “Continue to summary” → “Create Token”.</span></div>
+    <div class="ef-note"><span>ℹ</span><span data-i18n="modal_note">After your first successful Verify, the wizard memorizes each permission's ID — next time this button pre-fills the form automatically.</span></div>
+    <div class="ef-modal-foot">
+      <button class="btn" id="efModalCopyAll" type="button" data-i18n="modal_copyall">Copy all names</button>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost" id="efModalClose2" type="button" data-i18n="modal_close">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./wizard.js" defer></script>
+</body>
+</html>

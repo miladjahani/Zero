@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  NEXUS — standalone deploy config
+#  Deploy:  npx wrangler deploy -c nexus-wrangler.toml
+#  Local:   npx wrangler dev -c nexus-wrangler.toml
+#
+#  Env vars:
+#    u  → worker UUID (also the panel unlock key). Set yours in the dashboard
+#         under Settings → Variables (or paste into [vars] below).
+#    d  → optional second unlock key / short alias (e.g. "nexus").
+#
+#  KV:  the panel writes its live config to KV under key "c" (same shape the
+#       milli-config panel's ConfigModal uses), so a KV namespace is required.
+#       Create one, then paste its id below (or bind it from the dashboard).
+# ─────────────────────────────────────────────────────────────────────────────
+name = "nexus"
+main = "nexus.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+
+# Live panel config storage (key "c" / "config.json").
+[[kv_namespaces]]
+binding = "C"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# Worker UUID — also the unlock key for the internal panel and sub paths.
+[vars]
+u = "00000000-0000-4000-8000-000000000000"
+# d = "my-alias"   ← optional second unlock key / short sub path
+
+[observability]
+enabled = true

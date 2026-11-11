@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>در حال انتقال...</title>
+    <script>
+      // The app uses hash-based routing (/#/tokens), so this file is only
+      // ever hit if someone lands on a bare, non-hash path directly (e.g. a
+      // bookmarked /tokens URL from before this change, or a stray crawler
+      // request). Send them back to the app root; HashRouter takes it from
+      // there.
+      window.location.replace(
+        window.location.pathname.replace(/\/[^/]*$/, '/') || '/'
+      )
+    </script>
+  </head>
+  <body></body>
+</html>

@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+# Static demo of the panel (SPA only) — the full backend runs on Cloudflare Workers.
+# The app uses HashRouter, so it works from any base path.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'worker/**'
+      - 'd1/**'
+      - 'README.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun x tsc -b --noEmit
+
+      - name: Build (Pages base path + real panel API)
+        run: bun x vite build --base=/miliconfigpro-v1/
+        env:
+          # Demo on Pages talks to the real Cloudflare worker backend.
+          # Override anytime with a repository variable named PAGES_API_BASE.
+          VITE_API_BASE: ${{ vars.PAGES_API_BASE || 'https://miliconfigpro-v1.slang-spent-cussed.workers.dev/api' }}
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

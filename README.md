@@ -1,2 +1,348 @@
-# Zero
-⚡ Deployed via Zeus Universal Matrix Engine
+<div align="center">
+
+# ⚡ میلی‌کانفیگ پرو
+
+### پنل حرفه‌ای مدیریت، استقرار و توزیع کانفیگ روی Cloudflare Workers
+
+**بدون Supabase • بک‌اند کامل روی Workers + D1 • همه‌چیز در یک مخزن**
+
+[![GitHub Stars](https://img.shields.io/github/stars/miladjahani/miliconfigpro-v1?style=for-the-badge&logo=github&color=f1c40f&labelColor=1a1a2e)](https://github.com/miladjahani/miliconfigpro-v1/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/miladjahani/miliconfigpro-v1?style=for-the-badge&logo=github&color=3498db&labelColor=1a1a2e)](https://github.com/miladjahani/miliconfigpro-v1/network/members)
+[![GitHub Last Commit](https://img.shields.io/github/last-commit/miladjahani/miliconfigpro-v1?style=for-the-badge&logo=git&color=e67e22&labelColor=1a1a2e)](https://github.com/miladjahani/miliconfigpro-v1/commits/main)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?style=for-the-badge&logo=cloudflare&labelColor=1a1a2e)](https://workers.cloudflare.com)
+[![D1 Database](https://img.shields.io/badge/Cloudflare-D1-8b5cf6?style=for-the-badge&logo=cloudflare&labelColor=1a1a2e)](https://developers.cloudflare.com/d1/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178c6?style=for-the-badge&logo=typescript&labelColor=1a1a2e)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-18-61dafb?style=for-the-badge&logo=react&labelColor=1a1a2e)](https://react.dev)
+
+[⭐ ستاره بدهید](https://github.com/miladjahani/miliconfigpro-v1/stargazers) · [🍴 فورک کنید](https://github.com/miladjahani/miliconfigpro-v1/fork) · [🐞 گزارش باگ](https://github.com/miladjahani/miliconfigpro-v1/issues/new) · [🚀 استقرار سریع](#-شروع-سریع)
+
+[![Deploy Pages](https://github.com/miladjahani/miliconfigpro-v1/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/miladjahani/miliconfigpro-v1/actions/workflows/deploy-pages.yml)
+[![R2 Ready](https://img.shields.io/badge/R2-Ready%20(free%20tier)-f38020?style=flat-square&labelColor=1a1a2e&logo=cloudflare)](https://developers.cloudflare.com/r2/)
+[![Smart Placement](https://img.shields.io/badge/Smart%20Placement-ON-8b5cf6?style=flat-square&labelColor=1a1a2e)](https://developers.cloudflare.com/workers/configuration/smart-placement/)
+
+</div>
+
+---
+
+<div align="center">
+
+<a href="https://github.com/miladjahani/miliconfigpro-v1">
+  <img src="https://img.shields.io/badge/%F0%9F%8C%9F-%20اگر%20این%20پروژه%20به%20دردتان%20خورد%20ستاره%20بدهید-f1c40f?style=flat-square&labelColor=2d2d44" alt="Star us"/>
+</a>
+&nbsp;
+<a href="https://github.com/miladjahani/miliconfigpro-v1/fork">
+  <img src="https://img.shields.io/badge/🍴-فورک%20و%20استقرار%20خودتان-3498db?style=flat-square&labelColor=2d2d44" alt="Fork"/>
+</a>
+&nbsp;
+<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/miladjahani/miliconfigpro-v1">
+  <img src="https://img.shields.io/badge/☁️-Deploy%20to%20Cloudflare-f38020?style=flat-square&labelColor=2d2d44" alt="Deploy to Cloudflare"/>
+</a>
+
+</div>
+
+---
+
+## 🎯 این چیست؟
+
+میلی‌کانفیگ پرو یک **پنل تحت وب** برای مدیریت کامل زیرساخت کانفیگ شما روی کلودفلر است:
+
+- 🚀 **استقرار ورکر با یک کلیک** — edgetunnel و سورس اختصاصی، با ساخت خودکار KV و UUID
+- 👥 **کاربران اختصاصی برای هر ورکر** — هر کاربر ساب، کشور IP، فرگمنت، سقف حجم و تنظیمات منحصربه‌فرد خودش را دارد
+- 🧠 **موتور پارسر جهانی** — هر فرمت سابی (base64، sing-box JSON، Clash YAML، حتی HTML) را می‌خواند؛ چند لینک همزمان merge و dedupe می‌شوند
+- 🌍 **IP واقعی هر کشور، زنده** — متصل به اکوسیستم EDT (`ipdb.api.030101.xyz`) + بانک‌های Cloudflare رسمی و TheSpeedX
+- 📶 **اسکنر و بهینه‌ساز** — پینگ TCP واقعی، تست سرعت، حذف نودهای مرده و ساب بهینه‌شده
+- 💉 **تزریق IP و پروکسی** — IP ثابت ورود، زنجیره HTTP/SOCKS5، فرگمنت دقیق برای اپراتورهای ایران، WARP و دور زدن تحریم (جمنی/OpenAI)
+- 📱 **افزودن یک‌کلیکی به کلاینت** — v2rayNG، Clash Meta، sing-box، Hiddify، Streisand با QR کد و صفحهٔ وضعیت عمومی
+- 🤖 **ربات تلگرام اپ‌مانند** — کیبورد دائمی، صفحات تک‌پیامی، ویزارد استقرار، جست‌وجو، فضای اختصاصی هر کاربر و هشدارهای لحظه‌ای مصرف
+- 📊 **سهمیه‌بندی** — سقف گیگ ماهانه، سقف درخواست، حد دستگاه همزمان، انقضا و ریست دوره‌ای برای هر کاربر
+- 💡 **راهنمای زنده** — اولین کلیک روی هر دکمه، خودش را توضیح می‌دهد
+- 📦 **R2 رایگان خودکار** — با هر استقرار، باکت R2 ساخته و متصل می‌شود (۱۰ گیگ رایگان + egress صفر)
+- ⚙️ **gRPC/XHTTP بدون دردسر** — موقع استقرار، gRPC و WebSockets روی همهٔ زون‌ها خودکار روشن می‌شوند
+- ⚡ **سرعت** — فایل‌های استاتیک مستقیم از CDN لبه (بدون اجرای ورکر)، Smart Placement کنار D1، کش immutable یک‌ساله
+
+---
+
+## 🗺️ معماری
+
+```mermaid
+flowchart LR
+    A[React + Vite SPA] -->|/api/*| B[Cloudflare Worker]
+    B --> C[(D1 Database)]
+    B --> D[KV ورکرهای مستقر]
+    B -->|Cloudflare API| E[استقرار ورکر + KV]
+    B -->|زنده| F[EDT / IPDB / GitHub IP Banks]
+    E --> G[edgetunnel / سورس اختصاصی]
+    G --> H[ساب‌لینک کاربران]
+```
+
+| لایه | تکنولوژی | محل |
+|---|---|---|
+| فرانت‌اند | React 18 + Vite + Tailwind + shadcn | `src/` |
+| بک‌اند | Cloudflare Worker (TypeScript) | `worker/` |
+| دیتابیس | Cloudflare D1 (SQLite) | `d1/schema.sql` |
+| موتور پارسر | universal multi-format | `worker/parser.ts` |
+| استقرار ورکر | Cloudflare REST API | `worker/deploy.ts` |
+
+---
+
+## 🚀 شروع سریع
+
+### راه اول — استقرار با Cloudflare Builds (پیشنهادی)
+
+1. مخزن را **فورک** کنید
+2. در Cloudflare یک Worker جدید بسازید و به فورک خود وصل کنید
+3. Build command و Deploy command را روی `sh ./scripts/deploy.sh` قرار دهید
+
+دیگر نیازی به ساختن دستی دیتابیس یا گذاشتن `database_id` در `wrangler.toml` نیست:
+اسکریپت استقرار، دیتابیس `miliconfigpro-v1` را **با نام** در همان حسابی که توکن
+ساخت آن پروژه به آن تعلق دارد پیدا می‌کند (نبود می‌سازد) و شناسهٔ درست را در
+کانفیگ تولیدی `wrangler.deploy.toml` می‌گذارد. توکن باید اجازهٔ **D1 Edit** داشته
+باشد؛ اگر نداشته باشد استقرار بدون بایندینگ D1 انجام می‌شود تا بیلد سبز بماند.
+نام/شناسه دلخواه با متغیرهای محیطی `D1_DATABASE_NAME` و `D1_DATABASE_ID`.
+
+> ⚠️ هرگز `database_id` را در `wrangler.toml` هارد نکنید — این شناسه حساب-محور است
+> و با عوض‌شدن حساب کلادفلر کل استقرار را با خطای
+> `D1 binding 'DB' references database '<id>' which was not found [code: 10181]`
+> می‌شکند.
+
+از این به بعد هر `push` به `main` = بیلد + اعمال اسکیمای D1 + استقرار خودکار ✅
+
+### راه دوم — اجرای محلی
+
+```bash
+bun install
+npm run dev:full   # بیلد + D1 محلی + wrangler dev روی 0.0.0.0:5173
+```
+
+### راه سوم — فقط استقرار دستی
+
+```bash
+npm run deploy     # بیلد فرانت + اسکیمای D1 (idempotent) + wrangler deploy
+```
+
+---
+
+## 🔁 عوض‌کردن حساب کلادفلر (بدون از دست دادن دادهٔ کاربران و ادمین)
+
+دادهٔ پنل (کاربران، ادمین، توکن‌ها، تنظیمات ربات و همه‌چیز) فقط در دیتابیس D1 است، و
+خارج از کلادفلر هم روزانه یک نسخهٔ کامل دارد
+(`.github/workflows/d1-backup.yml` → شاخهٔ `d1-backups`، فایل‌های `backups/d1-YYYY-MM-DD.sql`).
+برای بردن پنل روی یک حساب کلادفلر دیگر همین مسیر را بَرَوید — هیچ چیزی از نو ساخته نمی‌شود:
+
+```bash
+# 1) تازه‌ترین اسنپ‌شات را بگیرید
+git fetch origin d1-backups
+git show origin/d1-backups:backups/d1-$(date -u +%F).sql > /tmp/d1.sql   # یا آخرین فایل موجود
+
+# 2) در حساب جدید: دیتابیس ساخته می‌شود و کل دامپ داخلش می‌رود + شمارش ردیف‌ها را نشان می‌دهد
+sh ./scripts/d1-restore.sh /tmp/d1.sql miliconfigpro-v1
+
+# 3) مستقر کنید — شناسهٔ تازه‌ساخته‌شده خودش پیدا می‌شود (یا با متغیر محیطی بدهید)
+#    D1_DATABASE_ID=<id> sh ./scripts/deploy.sh
+```
+
+سپس با **همان ایمیل/رمز ادمین قبلی** وارد شوید؛ جدول `users` هم آمده و همه‌چیز سرِ جای خودش است.
+
+> ⚠️ بعد از جابه‌جایی، `CLOUDFLARE_ACCOUNT_ID` و `CLOUDFLARE_API_TOKEN` را در
+> Secrets مخزن به حساب جدید تغییر دهید، وگرنه بک‌آپ روزانه از حساب قدیمی ادامه پیدا می‌کند.
+> (دامپ شامل هش رمزها و توکن‌هاست؛ فقط روی مخزن خصوصی/ماشین خودتان نگه دارید.)
+
+---
+
+## ✨ قابلیت‌ها در یک نگاه
+
+<table>
+<tr><th>بخش</th><th>چه می‌کند؟</th></tr>
+<tr><td><b>🚀 استقرار</b></td><td>ورکر edgetunnel یا سورس اختصاصی با UUID و KV خودکار؛ تنظیمات زندهٔ KV مستقیم از پنل (ProxyIP، ECH، فرگمنت، SOCKS5، مسیر تصادفی و...)</td></tr>
+<tr><td><b>👥 کاربران</b></td><td>برای هر ورکر: ساب خصوصی، انتخاب کشور با IP واقعی زنده، فرگمنت JSON دقیق، پریست اپراتورهای ایران، Cipher Suite، WARP، دور زدن تحریم، سقف حجم/درخواست/دستگاه، انقضا و ریست دوره‌ای</td></tr>
+<tr><td><b>💉 تزریق</b></td><td>IP ثابت ورود، چرخش خودکار IP، زنجیره HTTP/SOCKS5/TURN/SSTP، پارامترهای واقعی edgetunnel (proxyip، globalproxy، ech، ed=2560)</td></tr>
+<tr><td><b>📡 اسکنر</b></td><td>بانک‌های زندهٔ IP (EDT، IPDB، Cloudflare رسمی، cf-speedtest، TheSpeedX) + اسکن واقعی TCP روی بازه‌های CIDR + لیست پروکسی EDT-Pages</td></tr>
+<tr><td><b>⚡ بهینه‌ساز</b></td><td>پارسر جهانی همهٔ فرمت‌ها، چند لینک همزمان، پینگ واقعی، حذف نود مرده، خروجی Base64 / Clash / Sing-box / Plain</td></tr>
+<tr><td><b>📱 تحویل</b></td><td>صفحهٔ وضعیت عمومی هر کاربر با QR کد، دکمه‌های افزودن مستقیم به ۶ کلاینت، تشخیص خودکار فرمت از User-Agent، هدر Subscription-Userinfo</td></tr>
+<tr><td><b>🤖 ربات</b></td><td>وب‌هوک تلگرام، هشدار مصرف، مدیریت کاربران از تلگرام + کاتالوگ پنل‌ها (<code>/panels</code>)، لیست پنل‌های مستقرشده روی Railway/Render (<code>/servers</code>) و اعلان خودکار لحظهٔ آمادهشدن پنل</td></tr>
+<tr><td><b>💡 راهنما</b></td><td>Coach-mark زندهٔ اولین کلیک روی همهٔ دکمه‌های پنل + راهنمای متنی کامل مسیر کاربری</td></tr>
+<tr><td><b>📦 R2</b></td><td>باکت R2 رایگان با هر استقرار خودکار ساخته و به ورکر متصل می‌شود — داده‌های سنگین از D1 خارج می‌شوند</td></tr>
+<tr><td><b>⚙️ gRPC/XHTTP</b></td><td>روشن‌کردن خودکار gRPC + WebSockets روی زون‌ها موقع استقرار — نودها بدون تداخل با کلودفلر کار می‌کنند</td></tr>
+<tr><td><b>⚡ سرعت</b></td><td>استاتیک‌ها از CDN لبه بدون اجرای ورکر + Smart Placement کنار D1 + کش immutable یک‌ساله</td></tr>
+<tr><td><b>🧩 چند زیرساخت</b></td><td>استقرار روی Cloudflare (Workers/Pages)، Railway، Render.com و هر VPS با Docker — کاتالوگ استقرار فقط یک پنل دارد: <b>پنل اختصاصی ما</b> (NEXUS / Mizetusi) با تولید خودکار docker-compose / nginx.conf / railway.env · سورس‌های ورکر کلودفلر کاتالوگ جدا و دست‌نخورده‌ای دارند</td></tr>
+<tr><td><b>🧩 پنل اختصاصی در همه‌جای برنامه</b></td><td>پنل اختصاصی یک بخش درجه‌اول است، نه فقط یک گزینه در ویزارد: کارت اختصاصی در داشبورد (فهرست استقرارها، لینک ورود به پنل، داشبورد Railway/Render، رمز ادمین یک‌بارمصرف، «بررسی زنده» و «بررسی سلامت»)، تب <b>پنل اختصاصی</b> در صفحهٔ «ورکرها و پنل» (لینک عمیق <code>?tab=panels</code>)، بنر راهنما در «کاربران ورکر»، بخش مربوطه در راهنما، و ربات تلگرام. همهٔ این‌ها از یک API تغذیه می‌شوند: <code>GET /api/panels</code> (مشخصات پنل + استقرارهای کاربر)، <code>POST /api/panels/watch</code> (بررسی زندهٔ پلتفرم)، <code>POST /api/panels/health</code> (تست <code>/health</code> خودِ پنل از لبه)، <code>POST /api/panels/update</code> (بازسازی روی آخرین نسخه)، <code>POST /api/panels/auto-update</code> (روشن/خاموش‌کردن بروزرسانی خودکار) و <code>POST /api/panels/forget</code> (حذف از فهرست — سرویس روی پلتفرم به کار خود ادامه می‌دهد)</td></tr>
+<tr><td><b>♻️ همیشه آخرین نسخه</b></td><td>پنل اختصاصی هیچ‌وقت از مخزن بالادست عقب نمی‌ماند: در تب «پنل اختصاصی» بج <b>آخرین نسخهٔ بالادست</b> (شا + تاریخ کامیت، از GitHub و با کش لبه) نمایش داده می‌شود و دکمهٔ <b>«بروزرسانی به آخرین نسخه»</b> همان سرویس را از نو می‌سازد — دامنه، والیوم/دیسک و رمز ادمین دست‌نخورده می‌مانند و فقط کد جلو می‌رود (Railway: <code>serviceInstanceDeployV2</code>، Render: <code>POST /services/{id}/deploys</code>). با کلید <b>«بروزرسانی خودکار»</b>، یک کرون هر ۶ ساعت (<code>[triggers]</code> در <code>wrangler.toml</code> → <code>scheduled</code> در <code>worker/index.ts</code>) فقط استقرارهایی را بازسازی می‌کند که <code>last_version</code>شان با آخرین کامیت فرق دارد؛ اگر GitHub در دسترس نباشد هیچ اتفاقی نمی‌افتد</td></tr>
+<tr><td><b>🤖 ربات تلگرام</b></td><td>معماری سه‌لایه (<code>telegram-core</code> / <code>telegram-ui</code> / <code>telegram</code>) — کیبورد دائمی، صفحه‌های تک‌پیامی که درجا ویرایش می‌شوند، ویزارد استقرار ورکر کلودفلر **و استقرار پنل روی Railway/Render** (روش ← منبع/پنل ← توکن ← تأیید، با نمایش یک‌بار رمز ادمین و دکمهٔ بررسی زندهٔ وضعیت)، جست‌وجو، لینک‌های عمیق <code>?start=workers</code>، فضای اختصاصی هر کاربر تلگرام (<code>?start=&lt;token&gt;</code>) و اعلان لحظه‌ای پنل‌های Railway/Render</td></tr>
+<tr><td><b>🔐 ربات عمومی استقرار</b></td><td>یک ربات برای همه، ولی فضای هر کاربر جداست: هر کاربر تلگرام با <code>/start</code> یک توکن و لینک اختصاصی می‌گیرد و فقط توکن‌ها، ورکرها و استقرارهای خودش را می‌بیند. استقرارها با توکن Cloudflare/Railway/Render خودِ کاربر انجام می‌شود و توکن‌ها را می‌توان از داخل خود تلگرام (<code>🔑 توکن‌ها → ➕</code>) اضافه/غیرفعال/حذف کرد (اعتبارسنجی قبل از ذخیره + پاک‌کردن پیام حاوی توکن). تب ربات در پنل وب فقط برای مالک نمایش داده می‌شود (مالک با <code>OWNER_EMAIL</code> در <code>[vars]</code> فایل <code>wrangler.toml</code> مشخص می‌شود و اگر آن حساب ثبت‌نام نکرده باشد، اولین حساب پنل مالک می‌ماند) و بقیهٔ کاربران و مدیران پنل آن را نمی‌بینند؛ ربات هیچ بخش مدیریت پنل ندارد</td></tr>
+</table>
+
+---
+
+## 🧩 کاتالوگ پنل‌ها (Railway · Render.com · VPS)
+
+> **کاتالوگ استقرار فقط یک پنل دارد: پنل اختصاصی ما.** پنل‌های شخص ثالث (StanNG v2، PXPANEL، 3X-UI، S-UI، PasarGuard، Remnawave، Luffy، WG-Easy) به درخواست مالک حذف شدند و در `REMOVED_PANELS` داخل همان فایل با دلیل ثبت شده‌اند تا این تصمیم قابل ردیابی و برگشت‌پذیر بماند. کاتالوگ **سورس‌های ورکر کلودفلر** جداست (`shared/worker-sources.ts`) و دست‌نخورده باقی مانده است.
+
+پنلی که می‌توان روی Railway، Render.com یا یک VPS داکری مستقر کرد، در یک فایل مشترک تعریف می‌شود:
+
+```
+shared/panels.ts
+```
+
+این کاتالوگ هم در بک‌اند (Worker: `railway.ts`، `render.ts`، `index.ts`) و هم در فرانت‌اند (`DeployWizard`، `vps-deploy.ts`) استفاده می‌شود — پس افزودن یک پنل جدید با یک ورودی، بلافاصله در **همهٔ بخش‌های برنامه** (ویزارد استقرار، توکن‌ها، مستندات، ساخت فایل‌های استقرار) ظاهر می‌شود؛ دقیقاً مثل سورس‌های ورکر کلودفلر.
+
+| پنل | مخزن | جامعه | نوع اجرا | مسیر پنل | پورت | هدف‌ها |
+|---|---|---|---|---|---|---|
+| **پنل اختصاصی ما** (NEXUS / Mizetusi) | `miladjahani/Mizetusi` | 🇮🇷 | Docker (FastAPI + Xray-core) | `/login` | 8080 (+8443/8444/8446/8448/8449 tcp) | Railway · Render · VPS |
+
+حذف‌شده‌ها در `REMOVED_PANELS` (با دلیل) ثبت شده‌اند: `youdidking/stanngv2`، `iran-px-panel/pxpanel`، `MHSanaei/3x-ui`، `alireza0/s-ui`، `PasarGuard/panel`، `luffy-sh-op/LUFFY_PANEL`، `wg-easy/wg-easy`، `remnawave/backend`.
+
+### پنل‌های اسکریپتی (نصب مستقیم روی VPS)
+
+بعضی پروژه‌ها مستقیم روی خود هاست نصب می‌شوند (systemd/SSH) و در قالب داکر بالا نمی‌آیند. این‌ها فقط به‌عنوان **مرجع داخلی** در `shared/vps-scripts.ts` ثبت شده‌اند و برنامه هیچ‌کدام را به‌عنوان پنل قابل استقرار پیشنهاد نمی‌کند (کاتالوگ استقرار همان یک پنل اختصاصی است):
+
+| پروژه | جامعه | روش | آخرین کامیت |
+|---|---|---|---|
+| `HamedAp/ShahanPanel` (پنل شاهان) | 🇮🇷 | اسکریپت رسمی (`install.sh`) | 2026-09-12 |
+| `mack-a/v2ray-agent` | 🇨🇳 | اسکریپت یک‌خطی Xray/sing-box (+ نسخهٔ داکری) | 2026-09-09 |
+| `hiddify/Hiddify-Manager` | 🌍 | اسکریپت رسمی مخزن | 2026-09-07 |
+
+> برندهایی که اسمشان زیاد شنیده می‌شود ولی **مخزن عمومی قابل‌تأییدی ندارند** (SLV، RVG، loofi، sanayii، solgx) و همچنین مخازن راکد/۴۰۴، در `EXCLUDED_REPOS`، `EXCLUDED_WORKER_SOURCES` و `UNVERIFIABLE_PANEL_BRANDS` با دلیل ثبت شده‌اند.
+
+**قاعدهٔ افزودن:** هر پنلی (از جمله پنل اختصاصی) فقط بعد از **بررسی زندهٔ مخزن** اضافه می‌شود. هر ورودی `lastCommit` (تاریخ آخرین کامیت بالادست) و `verifiedAt` (تاریخ بررسی) دارد و در ویزارد به‌صورت بج «✅ last upstream commit …» نمایش داده می‌شود. مخازنی که راکد بودند (مثلاً `Gozargah/Marzban` با آخرین کامیت ۲۰۲۵-۰۱-۰۹) در فهرست `EXCLUDED_REPOS` با دلیل ثبت شده‌اند تا حذف‌شدنشان تصادفی به نظر نرسد.
+
+برای هر پنل، ویزارد استقرار از این سه روش پشتیبانی می‌کند:
+
+1. **Railway (خودکار)** — پروژه، محیط production، سرویس متصل به GitHub، دامنه و Volume ساخته می‌شوند؛ یک **Project Token** محدود به همان پروژه صادر و متغیرهای کامل Mizetusi (`ADMIN_PASSWORD`، `JWT_SECRET`، `SQLITE_PATH`، `NEXUS_PLATFORM`، `XRAY_ENABLED`، `WARP_ENABLED`، `PORT`، `NEXUS_HTTP_PORT`، `PUBLIC_BASE_URL`، `NEXUS_RAILWAY_TOKEN` و **`NEXUS_RAILWAY_PROJECT_ID`**) ست می‌شوند؛ Auto Deploy شاخه `main` فعال و **آخرین commit مخزن** با SHA دقیق مستقر می‌شود. اتصال مخزن با همان `Dockerfile` و `railway.json` خودش انجام می‌شود — روش استقرار اینجا همان روش خودِ مخزن است و ما کانفیگ موازی نمی‌سازیم.
+
+   **پورت‌های خام:** از این پس **خودِ پنل** پورت‌های TCP را می‌سازد. هنگام بالا آمدن، برای هر پورتی که مدیر روشن کرده یک **TCP Proxy** روی Railway می‌سازد، پورت عمومی تصادفی و هاست را ذخیره می‌کند، پورت HTTP را پین می‌کند و یک‌بار سرویس را ری‌استارت می‌کند (بدون `NEXUS_RAILWAY_PROJECT_ID` این بخش اجرا نمی‌شود: Railway شناسهٔ محیط و سرویس را خودش تزریق می‌کند ولی شناسهٔ پروژه را نه). ما موقع ساخت سرویس فقط پورت مستقیم **Reality (`8443`)** را منتشر می‌کنیم، چون تنها پورتی است که سوییچ ندارد؛ `8444` AnyTLS، `8446` MTProto و `8448`/`8449` وب‌پروکسی HTTP/SOCKS5 تصمیم مدیرند. TUIC (`8445`) پروتکل UDP است و TCP Proxy آن را حمل نمی‌کند.
+2. **Render.com (خودکار)** — یک Blueprint با همان مانیفست تنظیمات، Docker runtime و دیسک ماندگار `/data` ساخته می‌شود؛ Render خودش `PORT` و دامنه عمومی را تزریق می‌کند.
+3. **VPS (Docker)** — بستهٔ ZIP شامل `docker-compose.yml`، `nginx.conf`، `.env`، `deploy.sh` و `README.md` دانلود می‌شود. برای پنل‌های پایتونی `Dockerfile` هم ساخته می‌شود؛ پنل‌های دارای ایمیج رسمی مستقیم از همان ایمیج بالا می‌آیند و در صورت نیاز، سرویس‌های **PostgreSQL** و **Redis** خودکار به compose اضافه می‌شوند.
+
+> در Mizetusi هیچ سوییچی خودکار روشن نمی‌شود: پورت هر لیسنر خامی را که مدیر روشن کند، خودِ پنل با یک TCP Proxy روی Railway منتشر می‌کند و پورت عمومی تصادفی‌اش را در کارت خودش نشان می‌دهد — این برنامه هیچ سوییچی را روشن نمی‌کند و فقط توکن Project و شناسهٔ پروژه را در متغیرهای سرویس می‌گذارد. لیسنرهای خام و پیش‌فرض‌شان: Reality روی `8443` (بدون سوییچ، روشن)، AnyTLS روی `8444`، MTProto روی `8446`، وب‌پروکسی HTTP روی `8448` و وب‌پروکسی SOCKS5 روی `8449`. TUIC روی `8445` پروتکل UDP است و TCP Proxy آن را حمل نمی‌کند، پس روی Railway منتشر نمی‌شود. پروکسی WEB تلگرام (`tg://webproxy`) روی دامنه HTTPS و WebSocket خودِ پنل کار می‌کند و به TCP Proxy جداگانه نیاز ندارد.
+
+> رمز ادمین، کلید سشن و Project Token در هر استقرار به‌صورت تصادفی ساخته می‌شوند و در متغیرهای محیطی همان سرویس قرار می‌گیرند؛ رمز ادمین فقط یک‌بار در رابط کاربری نمایش داده می‌شود و Project Token هرگز به مرورگر برگردانده نمی‌شود. پس از ساخت، هر push جدید روی `main` به‌صورت خودکار منتشر می‌شود؛ دکمهٔ «استقرار آخرین نسخه» و endpoint `POST /api/panels/update` نیز آخرین commit را فوراً روی همان سرویس اجرا می‌کنند.
+
+**افزودن پنل جدید:** یک ورودی به آرایهٔ `PANELS` در `shared/panels.ts` اضافه کنید (مخزن، نوع اجرا، پورت، مسیر پنل و نام متغیرهای محیطی). نیازی به تغییر جای دیگری از کد نیست.
+
+**آخرین نسخه:** `defaultBranch` همان پنل (پیش‌فرض `main`) هم شاخه‌ای است که Railway/Render از آن بیلد می‌کنند و هم شاخه‌ای که بررسی نسخهٔ بالادست می‌خواند — پس تغییر یک فیلد، هم بیلد و هم بج «آخرین نسخهٔ بالادست» را هم‌زمان جابه‌جا می‌کند.
+
+---
+
+## ⚡ کاتالوگ منابع ورکر + به‌روزرسانی از مخزن
+
+سورس‌های ورکر کلودفلر در `shared/worker-sources.ts` تعریف می‌شوند (همان قانون «بررسی زندهٔ مخزن» با `lastCommit` و `verifiedAt`):
+
+| منبع | مخزن | حالت | آخرین کامیت |
+|---|---|---|---|
+| ورکر اختصاصی (CFnew) | `Alibakhshi-qr/miliconfig-pro` | خودکار | 2026-09-08 |
+| NEXUS | `miladjahani/miliconfigpro-v1` | خودکار | 2026-09-08 |
+| miliconfig zeus | `miladjahani/miliconfigzeus` | خودکار | 2026-09-08 |
+| **ZEUS PANEL** | `panel-zeus/Z-E-U-S` | خودکار | **2026-09-23** |
+| cmliu/edgetunnel | `cmliu/edgetunnel` | خودکار | 2026-09-04 |
+| BPB Worker Panel | `bia-pain-bache/BPB-Worker-Panel` | ویزارد | 2026-07-20 |
+
+### 🛡️ ZEUS PANEL (`panel-zeus/Z-E-U-S`) — پنل ضد فیلتر روی D1
+
+از ویزارد استقرار با گزینهٔ **ZEUS PANEL** کاملاً خودکار مستقر می‌شود:
+
+- **پنل کامل روی Workers + D1** — دیتابیس D1 اختصاصی برای هر استقرار به‌صورت خودکار ساخته و به ورکر بایند می‌شود؛ رمز مدیر را در اولین ورود به پنل خودتان تعیین می‌کنید (چیزی در کاتالوگ ذخیره یا بازپخش نمی‌شود).
+- **ضد فیلترینگ داخلی پنل** — فرگمنت TLS با پریست‌های اپراتورهای ایرانی، جعل اثرانگشت ClientHello، فرگمنت JSON و Cipher Suite اختصاصی (PattN/PattNG)، مسدودسازی NSFW و تبلیغات با DoH، چرخش خودکار IP لبهٔ کلودفلر و مسیریابی چندپروکسی.
+- **به‌روزرسانی از مخزن، داخل همین برنامه** — دکمهٔ «↻» کنار هر ورکر، کد را دوباره از مخزن بالادست می‌گیرد و جایگزین می‌کند. ETag فایل (sha256 محتوا) ذخیره می‌شود، پس اگر مخزن تغییری نکرده باشد **هیچ آپلودی انجام نمی‌شود** و فقط پیام «به‌روز است» برمی‌گردد. بایندینگ‌های زندهٔ ورکر (D1، R2، KV و متغیرها) از خود کلودفلر خوانده و **دست‌نخورده** دوباره ارسال می‌شوند — پس داده‌ها و متغیرهای شما هرگز پاک نمی‌شوند.
+- **🛡️ تأیید یکپارچگی سورس پیش از استقرار (چک‌سام)** — هر فایل دانلودشده پیش از آپلود با **چک‌سام رسمی همان ریویژن** مقایسه می‌شود: هش blob گیت‌هاب (git object id) به‌همراه اندازهٔ بایت فایل، خوانده‌شده از API مخزن (`worker/source-verify.ts`). اگر اینترنت وسط دانلود قطع شود یا فایل نصفه بیاید، هش هیچ‌وقت مطابقت نمی‌کند و **استقرار متوقف می‌شود** — قبلاً فقط «بزرگ‌تر از ۱۰۰۰ بایت و داشتن مارکر» بررسی می‌شد و همان فایل ناقص مستقر می‌شد و ورکر را با `error code: 1101` از کار می‌انداخت. برای نسخه‌های باندل‌شدهٔ خود پنل (`/repo/…`) که چک‌سام منتشرشده ندارند، یک بررسی محلی (اندازه، نقطهٔ ورود، توازن آکولاد و کامل‌بودن آخرین دستور) انجام می‌شود و در لاگ صریحاً «تأییدنشده» علامت می‌خورد.
+- **♻️ خود-ارزیابی پس از استقرار + بازگردانی خودکار** — پس از هر آپلود، ورکر تا پاسخ‌دادن تست می‌شود (`self_check` روی خود رکورد ذخیره می‌شود). اگر پاسخ نداد، همان سورس تأییدشده یک بار دیگر آپلود می‌شود و اگر باز هم بالا نیامد، **آخرین ریویژن سالم** (کامیتش همان موقع ذخیره شده) با همان چک‌سام از مخزن خوانده و بازگردانده می‌شود. نتیجه: یک آپلود خراب هرگز «موفق» گزارش نمی‌شود و به بقیهٔ پنل‌های متصل منتقل نمی‌گردد.
+- **♻️ `/recover` در ربات تلگرام** — ورکری که روی خطای ۱۱۰۱ قفل شده باشد نمی‌تواند خودش را آپدیت کند (کدی که آپدیتر را اجرا می‌کند همان کد خراب است). دستور `/recover` (یا دکمهٔ «♻️ بازیابی» روی هر ورکر و در فهرست بازیابی) سورس را دوباره می‌گیرد، چک‌سام را بررسی می‌کند، روی همان ورکر مستقر می‌کند و بعد تست زنده می‌گیرد — دیتابیس، کاربران و رمزها دست‌نخورده می‌مانند.
+- **🗑 حذف کامل حالت مبهم‌سازی (Obfuscated Format)** — بازنویسی سورس برای هر استقرار **حذف شد**: خروجی آن با رانتایم Cloudflare Workers سازگار نبود و باعث می‌شد کلودفلر از اجرای اسکریپت جلوگیری کند. تنظیم قدیمی هم به‌صورت خودکار از رکوردها پاک می‌شود (`json_remove` در `worker/schema.ts` و پاک‌سازی هنگام هر به‌روزرسانی)؛ سورس دقیقاً همان‌طور که مخزن منتشر می‌کند آپلود می‌شود.
+- ⚠️ **مجوز:** مخزن ZEUS اختصاصی و «شخصی/غیرتجاری» است و طبق `LICENSE` خودش اجازهٔ انتشار مجدد کد را نمی‌دهد. از این پس **سورس دست‌نخورده** منتشر می‌شود، پس واترمارک‌ها و اعلان‌های مجوز/کپی‌رایت بالادست (ZEUS / anti-resale) سرِ جای خودشان می‌مانند. ECH و فرگمنتِ اضافه‌شده در miliconfig روی *لایهٔ ساب* اعمال می‌شود، نه روی سورس پنل.
+- **کدام منابع چک‌سام‌دارند؟** همهٔ منابع کاتالوگ یک مسیر دارند (`worker/deploy.ts` → `fetchWorkerSource`). منابعی که از `raw.githubusercontent.com` خوانده می‌شوند چک‌سام رسمی مخزن دارند؛ فقط نسخه‌های باندل‌شدهٔ خود پنل (`/repo/worker-source.js`، `/repo/nexus.js`) چک‌سام منتشرشده ندارند و با برچسب «تأییدنشده» به‌همراه بررسی محلی مستقر می‌شوند. مسیر استقرار چه از پنل وب باشد و چه از **ربات تلگرام** (که هر دو از `startDeployment`/`runDeployment` استفاده می‌کنند)، همین یک موتور را می‌بینند، پس رفتار یکسان است.
+
+### 🔐 ECH و فرگمنت روی ساب‌های تزریقی (Optimize)
+
+برای پنل‌هایی که خودشان ECH ندارند (از جمله ZEUS)، در **بهینه‌ساز → ساب تزریقی** لینک ساب پنل را وارد کنید و:
+
+- **🔐 ECH** — پارامتر `ech=<sni>+<dns>` فقط روی نودهای TLS اعمال می‌شود (خود SNI رمز می‌شود؛ قوی‌ترین ترفند ضدشناسایی در فایل کانفیگ).
+- **🧩 فرگمنت** — پارامترهای `fm`/`cs` با پریست‌های آماده یا مقدار دستی.
+
+این مقادیر روی خروجی ساب ذخیره می‌شوند، پس لینک نهایی همیشه به‌روز است. `vmess://` (که قالب JSON دارد) و نودهای بدون TLS دست‌نخورده می‌مانند تا لینک خراب نشود.
+
+---
+
+## 🌌 NEXUS — نسل جدید ورکر (پیش‌فرض جدید)
+
+یک ورکر کاملاً جدید و مستقل که از صفر برای نیاز امروز طراحی شده — ترکیبی از پنل داخلی هوشمند، نقشهٔ زندهٔ جهانی و مبهم‌سازی پیشرفته:
+
+- 🧠 **موتور هوشمند** — تنظیمات به‌صورت خودکار با توجه به کشور/دیتاسنتر بازدیدکننده بهینه می‌شود (انتخاب بهترین PoP، پورت، transport و فرگمنت)
+- 🗺️ **نقشهٔ زندهٔ سراسری** — ۵۷+ دیتاسنتر Cloudflare با مختصات واقعی، محاسبهٔ RTT بر اساس فاصله و نمایش بهترین مسیر برای هر کاربر در هر جای دنیا
+- 🛡️ **مبهم‌سازی دو لایه** — قفل و کلیدهای پیکربندی رمزگذاری‌شده + نام توابع غیرقابل‌ردیابی + ناحیهٔ کد طعمه (decoy) برای گمراه‌کردن تحلیل‌گر
+- ⚡ **ساب‌نویس خودکار** — خروجی Base64 / Clash / sing-box / Plain با تشخیص خودکار از User-Agent و `?target=`
+- 🔐 **پنل داخلی همه‌چیزتمام** — تنظیمات زندهٔ KV (transport، TLS/ECH، فرگمنت، ProxyIP، Cipher)، دو زبانهٔ فارسی/انگلیسی، طراحی آینده‌نگرانه با پس‌زمینهٔ ستاره‌ای متحرک
+- 📂 **یک فایل، بدون وابستگی** — کل ورکر (پنل + API + نقشه) در `public/repo/nexus.js` است؛ بدون asset، بدون D1
+
+### نصب NEXUS
+
+**راه اول — از پنل میلی‌کانفیگ:** در صفحهٔ «استقرار ورکر»، منبع را روی **NEXUS** بگذارید و مثل بقیهٔ سورس‌ها مستقر کنید. UUID هم‌ان کلید پنل است: `https://<worker>.workers.dev/<uuid>`
+
+**راه دوم — مستقل:**
+
+```bash
+npx wrangler kv namespace create nexus-config
+# → id را در public/repo/nexus-wrangler.toml جایگزین REPLACE_WITH_YOUR_KV_NAMESPACE_ID کنید
+npx wrangler deploy -c public/repo/nexus-wrangler.toml
+```
+
+| متغیر | معنی |
+|---|---|
+| `u` | UUID ورکر — هم‌کلید بازکردن پنل و هم مسیر ساب (`/<uuid>/sub`) |
+| `d` | کلید دوم اختیاری / نام کوتاه |
+| KV `C` | تنظیمات زنده زیر کلید `c` (سازگار با پنل میلی‌کانفیگ) |
+
+---
+
+## 📁 ساختار پروژه
+
+```
+├── src/                    # فرانت‌اند (React + Vite)
+│   ├── pages/              # داشبورد، ورکرها و پنل، کاربران، بهینه‌ساز، اسکنر...
+│   ├── components/         # PanelDeploys (پنل اختصاصی)، LiveGuide، Layout و...
+│   └── lib/                # تایپ‌ها، متن راهنماها، API client
+├── worker/                 # بک‌اند Cloudflare Worker
+│   ├── index.ts            # روتر /api/*
+│   ├── parser.ts           # موتور پارسر جهانی
+│   ├── members.ts          # ساب اختصاصی هر کاربر
+│   ├── deploy.ts           # استقرار ورکر با API کلودفلر
+│   ├── panel-deploy.ts     # موتور استقرار/پایش پنل اختصاصی (Railway · Render)
+│   └── ...
+├── d1/schema.sql           # اسکیمای کامل دیتابیس
+└── wrangler.toml           # کانفیگ Cloudflare
+```
+
+---
+
+## 🛠️ توسعه
+
+```bash
+bun install        # نصب وابستگی‌ها
+npm run dev:full   # اجرای کامل محلی
+npx tsc --noEmit   # تایپ‌چک
+npm run deploy     # استقرار دستی
+```
+
+---
+
+<div align="center">
+
+## ⭐ به ما ستاره بدهید!
+
+اگر میلی‌کانفیگ پرو کارتان را راه انداخت، یک ستاره بزرگ‌ترین حمایت است ⭐
+
+<a href="https://github.com/miladjahani/miliconfigpro-v1/stargazers">
+  <img src="https://reporoster.com/stars/dark/miladjahani/miliconfigpro-v1" alt="Stars over time"/>
+</a>
+
+<br/>
+
+<a href="https://github.com/miladjahani/miliconfigpro-v1/stargazers">
+  <img src="https://img.shields.io/badge/⭐%20ستاره%20بدهید-در%20یک%20کلیک-f1c40f?style=for-the-badge&labelColor=1a1a2e" alt="Give a Star"/>
+</a>
+&nbsp;
+<a href="https://github.com/miladjahani/miliconfigpro-v1/fork">
+  <img src="https://img.shields.io/badge/🍴%20فورک-و%20خودتان%20میزبان%20شوید-3498db?style=for-the-badge&labelColor=1a1a2e" alt="Fork"/>
+</a>
+
+<sub>ساخته‌شده با ⚡ برای جامعهٔ فارسی‌زبان — بدون هیچ وابستگی به سرویس خارجی، همه‌چیز روی کلودفلر شما</sub>
+
+</div>

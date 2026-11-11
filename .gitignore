@@ -1,0 +1,27 @@
+```
+# Build artifacts
+dist/
+build/
+pages-dist/
+.wrangler/
+*.js
+# Bundled worker sources the deploy engine falls back to (the upstream repos are
+# private, so `/repo/*.js` is the copy that actually deploys). Ignored by the
+# `*.js` rule above, which is how `git clean`/a plain `git add` dropped them and
+# every CFnew / NEXUS deployment died with "failed to fetch worker source".
+!public/repo/*.js
+
+# Generated deploy config (scripts/deploy.sh writes it with the live D1 id)
+wrangler.deploy.toml
+
+# Dependencies
+node_modules/
+
+# Editors
+.vscode/
+
+# Environment
+.env
+.env.local
+*.env.*
+```

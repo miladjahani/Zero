@@ -1,0 +1,12 @@
+name = "wizard"
+main = "proxy.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# پوشهٔ wizard فقط فایل‌های استاتیک است (index.html, wizard.js, worker-source.js)
+# proxy.js بیرون از این پوشه است، پس به‌عنوان asset آپلود نمی‌شود → خطا نمی‌دهد
+[assets]
+directory = "wizard"
+
+[observability]
+enabled = true

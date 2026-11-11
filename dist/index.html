@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="zedsecure">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MiliConfig Pro — پنل استقرار هوشمند کلودفلر و ربات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                50: 'rgb(var(--c-brand-50) / <alpha-value>)',
+                100: 'rgb(var(--c-brand-100) / <alpha-value>)',
+                200: 'rgb(var(--c-brand-200) / <alpha-value>)',
+                300: 'rgb(var(--c-brand-300) / <alpha-value>)',
+                400: 'rgb(var(--c-brand-400) / <alpha-value>)',
+                500: 'rgb(var(--c-brand-500) / <alpha-value>)',
+                600: 'rgb(var(--c-brand-600) / <alpha-value>)',
+                700: 'rgb(var(--c-brand-700) / <alpha-value>)',
+                800: 'rgb(var(--c-brand-800) / <alpha-value>)',
+                900: 'rgb(var(--c-brand-900) / <alpha-value>)',
+              },
+              slate: {
+                50: 'rgb(var(--c-slate-50) / <alpha-value>)',
+                100: 'rgb(var(--c-slate-100) / <alpha-value>)',
+                200: 'rgb(var(--c-slate-200) / <alpha-value>)',
+                300: 'rgb(var(--c-slate-300) / <alpha-value>)',
+                400: 'rgb(var(--c-slate-400) / <alpha-value>)',
+                500: 'rgb(var(--c-slate-500) / <alpha-value>)',
+                600: 'rgb(var(--c-slate-600) / <alpha-value>)',
+                700: 'rgb(var(--c-slate-700) / <alpha-value>)',
+                800: 'rgb(var(--c-slate-800) / <alpha-value>)',
+                900: 'rgb(var(--c-slate-900) / <alpha-value>)',
+                950: 'rgb(var(--c-slate-950) / <alpha-value>)',
+              },
+              error: { 300: '#fda4af', 400: '#fb7185', 500: '#f43f5e' },
+              warning: { 300: '#fde047', 400: '#facc15', 500: '#eab308' },
+            }
+          }
+        }
+      };
+    </script>
+    <link rel="stylesheet" href="/assets/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@18.3.1",
+          "react-dom": "https://esm.sh/react-dom@18.3.1",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+          "react-router-dom": "https://esm.sh/react-router-dom@6.26.2?deps=react@18.3.1,react-dom@18.3.1",
+          "lucide-react": "https://esm.sh/lucide-react@0.446.0?deps=react@18.3.1",
+          "jszip": "https://esm.sh/jszip@3.10.1"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/assets/app.js"></script>
+  </body>
+</html>

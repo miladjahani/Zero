@@ -1,0 +1,41 @@
+{
+  "name": "miliconfig-pro",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:full": "vite build && wrangler d1 execute miliconfigpro-v1 --local --config wrangler.dev.toml --file=d1/schema.sql -y && wrangler dev --config wrangler.dev.toml --ip 0.0.0.0 --port ${PORT:-5173}",
+    "db:init": "wrangler d1 execute miliconfigpro-v1 --local --config wrangler.dev.toml --file=d1/schema.sql -y",
+    "db:init:remote": "wrangler d1 execute miliconfigpro-v1 --remote --file=d1/schema.sql -y",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "deploy": "sh ./scripts/deploy.sh",
+    "deploy:pages": "sh ./scripts/deploy-pages.sh"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.441.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250110.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.11",
+    "typescript": "^5.5.3",
+    "vite": "^5.4.3",
+    "wrangler": "^4"
+  }
+}
